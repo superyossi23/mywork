@@ -13,7 +13,6 @@ def bmp2png: Convert bmp image to png image
 import numpy as np
 from PIL import Image
 import glob
-import os
 from pdf2image import convert_from_path
 import os
 import cv2 as cv
@@ -32,12 +31,16 @@ def pdf2image(
     format='TIFF'
 ):
 
+    ppmData = outputDir+'PPM files/'
+
     # Create dir if path does not exist #
     if not os.path.exists(outputDir):
         os.mkdir(outputDir)
+    if not os.path.exists(ppmData):
+        os.mkdir(ppmData)
 
     # Convert #
-    pages = convert_from_path(pdf_path=path, dpi=dpi)
+    pages = convert_from_path(pdf_path=path, dpi=dpi, output_folder=ppmData)
 
     # Output #
     cnt = 0
