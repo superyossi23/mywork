@@ -1,4 +1,5 @@
 """
+def image_output: Outputs image
 def pdf2image: Convert a PDF to IMAGEs
 def saveTiffStack: Save multi-frame tiff file
 def add_image: Add an img1 to an img0
@@ -18,36 +19,26 @@ import os
 import cv2 as cv
 
 
-# Settings ------------------------------------------------------------------------
+# Global settings -----------------------------------------------------------------
 cwd = os.getcwd()
 
 # ---------------------------------------------------------------------------------
 
-def pdf2image(
-    path='pdf2png_compare wd/Receipt Python3.pdf',
-    dpi=300,
-    outputDir='pdf2png_compare wd/',
-    filename='Receipt Excel',
-    format='TIFF'
+def image_output(
+        pages=[], outputDir='', format='TIFF', filename='output file name'
 ):
-
-    ppmData = outputDir+'PPM files/'
-
-    # Create dir if path does not exist #
-    if not os.path.exists(outputDir):
-        os.mkdir(outputDir)
-    if not os.path.exists(ppmData):
-        os.mkdir(ppmData)
-
-    # Convert #
-    pages = convert_from_path(pdf_path=path, dpi=dpi, output_folder=ppmData)
-
-    # Output #
-    cnt = 0
+    """
+    :param pages:
+    :param outputDir:
+    :param format:
+    :param filename: Select output file name
+    :return:
+    """
     if format == 'JPEG':
         # JPEG #
+        cnt = 0
         for page in pages:
-            myfile = outputDir + filename + '_' + str(cnt) + '.jpg'
+            myfile = outputDir + filename + str(cnt) + '.jpg'
             cnt += 1
             page.save(myfile, 'JPEG')
             print('Output: ', myfile)
@@ -58,8 +49,87 @@ def pdf2image(
         print('Output: ', myfile)
 
 
+def pdf2image(
+    path='pdf2image_compare wd/Receipt Python3.pdf',
+    dpi=300,
+    outputDir='pdf2image_compare wd/',
+    filename='Receipt Python3',
+    format='TIFF',
+    page_length=2,
+    separation=10,
+    page_select=False
+):
+    """
+    :param path: PDF file path
+    :param dpi: Select resolution
+    :param outputDir: Output directory name
+    :param filename: Input filename
+    :param format: 'TIFF' or 'JPEG'
+    :param page_length: int/'select'/False. False: Convert every pages
+    :param separation: Divide all pages into the selected number of pages
+    :param page_select: []. Select necessary pages.
+    odd: first_page, even: last_pages. e.g. [1,2, 4,6, 9,9]
+    :return:
+    """
+    # Settings #
+    ppmData = outputDir+'PPM files/'
+    quotient = page_length // separation
+    remainder = page_length % separation
+
+    # Create dir if path does not exist
+    if not os.path.exists(outputDir):
+        os.mkdir(outputDir)
+    if not os.path.exists(ppmData):
+        os.mkdir(ppmData)
+
+    # if page_length unselected -----------------------------------------------------
+    if page_length == False:
+
+        if page_select == False:
+            page_select = [1, page_length]
+            print('All pdf pages will be converted')
+
+        # Convert #
+        pages = []
+        for i in range(len(page_select)//2):
+            print(i)
+            pages.extend(convert_from_path(pdf_path=path, dpi=dpi, output_folder=ppmData,
+                                               first_page=page_select[i*2], last_page=page_select[i*2+1]))
+
+        # Output #
+        image_output(pages, outputDir, format, filename)
+
+    # if page_length = int ---------------------------------------------------------
+    elif type(page_length) == int:
+        print('page_length =', page_length)
+
+        # Quotient
+        for j in range(quotient):
+
+            # Convert #
+            pages = convert_from_path(pdf_path=path, dpi=dpi, output_folder=ppmData,
+                                      first_page=j * separation + 1, last_page=(j + 1) * separation)
+
+            # Output #
+            image_output(pages, outputDir, format,
+                         filename+'_'+str(j*separation+1)+'_'+str((j+1)*separation))
+
+        # Remainder
+        # Convert #
+        if remainder != 0:
+            pages = convert_from_path(pdf_path=path, dpi=dpi, output_folder=ppmData,
+                                      first_page=j * separation + 1, last_page=(j + 1) * separation + remainder)
+
+            # Output #
+            image_output(pages, outputDir, format,
+                         filename + '_' + str((j+1) * separation + 1) + '_' + str((j + 1) * separation + remainder))
+
+    else:
+        raise Exception('page_length must be int/False')
+
+
 def saveTiffStack(
-        save_path='pdf2png_compare wd/saveTiffStack result tiff.tif',
+        save_path='pdf2image_compare wd/saveTiffStack result tiff.tif',
         imgs=[np.array([])]
 ):
     stack = []
@@ -69,7 +139,7 @@ def saveTiffStack(
 
 
 def add_image(
-        job_dir='pdf2png_compare wd/image/',
+        job_dir='pdf2image_compare wd/image/',
         filename0='Receipt Excel',  # pdf, filename0 must be bigger than filename1
         filename1='Receipt Python3', # pdf
         out_filename='add_image result',
@@ -119,60 +189,71 @@ def add_image(
 
 
 def add_image_tif(
-        job_dir='pdf2png_compare wd/',
+        job_dir='pdf2image_compare wd/',
         filename0='Receipt Excel',  # pdf, filename0 must be bigger than filename1
         filename1='Receipt Python3', # pdf
-        out_filename='add_image_tif result',
 ):
     """
     Add img1 on img0
     """
-    # Read (Multi-frame Tiff file) #
-    ret0, imgs0 = cv.imreadmulti(job_dir + filename0 + '.tif')
-    ret1, imgs1 = cv.imreadmulti(job_dir + filename1 + '.tif')
+    f0_list, f1_list = [], []
+    for file in os.listdir(cwd + '\\pdf2image_compare wd'):
+        if file.startswith(filename0) and file.endswith('.tif'):
+            f0_list.append(file)
+        if file.startswith(filename1) and file.endswith('.tif'):
+            f1_list.append(file)
 
-    cnt = 0
-    for img0, img1 in zip(imgs0, imgs1):
 
-        # img0 => img0_r #
-        img0_b = np.zeros(img0.shape, dtype='uint8')
-        img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
-        ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # White-out
-        img0_b[:, :, 0:] = 255  # White BG
-        img0_b[:, :, 0] = mask0  # img0 => img0_b
+    for f0, f1 in zip(f0_list, f1_list):
 
-        # I want to put logo on top-left corner, So I create a ROI (Region of Interest) #
-        rows, cols, channels = img1.shape
-        roi = img0_b[0:rows, 0:cols]
+        out_filename = '{} on {}'.format(f1.split('.')[0], f0.split('.')[0])
 
-        # Now create a mask of img1 and create its inverse mask also #
-        img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-        ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # White-out
-        mask_inv = cv.bitwise_not(mask1)
+        # Read (Multi-frame Tiff file) #
+        ret0, imgs0 = cv.imreadmulti(job_dir + f0)
+        ret1, imgs1 = cv.imreadmulti(job_dir + f1)
 
-        # White-out the BG in ROI #
-        img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
+        cnt = 0
+        for img0, img1 in zip(imgs0, imgs1):
 
-        # Take only region of Mask from img1 #
-        img1_fg = cv.bitwise_and(img1, img1, mask=mask_inv)
+            # img0 => img0_r #
+            img0_b = np.zeros(img0.shape, dtype='uint8')
+            img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
+            ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # White-out
+            img0_b[:, :, 0:] = 255  # White BG
+            img0_b[:, :, 0] = mask0  # img0 => img0_b
 
-        # Put img1 in ROI and modify the img0 #
-        dst = cv.add(img0_bg, img1_fg)  # ROI
-        img0[0:rows, 0:cols] = dst  # Full Image
-        imgs0[cnt] = img0
+            # I want to put logo on top-left corner, So I create a ROI (Region of Interest) #
+            rows, cols, channels = img1.shape
+            roi = img0_b[0:rows, 0:cols]
 
-        cnt += 1
+            # Now create a mask of img1 and create its inverse mask also #
+            img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
+            ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # White-out
+            mask_inv = cv.bitwise_not(mask1)
 
-    # Output #
-    print('Output: ', cwd + job_dir + out_filename + '.tif')
-    saveTiffStack(save_path=job_dir + out_filename + '.tif', imgs=imgs0)
+            # White-out the BG in ROI #
+            img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
+
+            # Take only region of Mask from img1 #
+            img1_fg = cv.bitwise_and(img1, img1, mask=mask_inv)
+
+            # Put img1 in ROI and modify the img0 #
+            dst = cv.add(img0_bg, img1_fg)  # ROI
+            img0[0:rows, 0:cols] = dst  # Full Image
+            imgs0[cnt] = img0
+
+            cnt += 1
+
+        # Output #
+        print('Output: ', cwd + job_dir + out_filename + '.tif')
+        saveTiffStack(save_path=job_dir + out_filename + '.tif', imgs=imgs0)
 
 
 def add_image_all(
     filename0='Receipt Excel',  # pdf, filename0 must be equal/bigger than filename1
     filename1='Receipt Python3', # pdf
     out_filename='add_image_all result',
-    job_dir='pdf2png_compare wd/'
+    job_dir='pdf2image_compare wd/'
 ):
     """
     Add img1 on img0
@@ -228,40 +309,43 @@ def add_image_all(
 
 
 def pdf2png_compare(
-        job_dir='pdf2png_compare wd/',
+        job_dir='pdf2image_compare wd/',
         filename0='Receipt Excel',
         filename1='Receipt Python3',
-        out_filename='add_image_all result'
+        page_length=False,
+        separation=10
 ):
     """
     Execute add_image_all to 2 pdf files
     """
-    file_dir = 'pdf2png_compare wd/image/'
+    file_dir = 'pdf2image_compare wd/image/'
 
     # First file #
-    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=file_dir, filename=filename0)
+    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=file_dir, filename=filename0,
+              page_length=page_length, separation=separation)
 
     # Second file #
     pdf2image(path=job_dir + filename1 + '.pdf', outputDir=file_dir, filename=filename1)
 
     # Output #
-    add_image_all(filename0=filename0, filename1=filename1, out_filename=out_filename, job_dir=job_dir)
+    add_image_all(filename0=filename0, filename1=filename1, job_dir=job_dir)
 
 
 def pdf2tiff_compare(
-        job_dir='pdf2png_compare wd/',
+        job_dir='pdf2image_compare wd/',
         filename0='Receipt Excel',
         filename1='Receipt Python3',
-        out_filename='add_image_tif result'
+        page_length=False
 ):
     # First file #
-    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=job_dir, filename=filename0, format='TIFF')
+    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=job_dir, filename=filename0, format='TIFF',
+              page_length=page_length)
 
     # Second file #
     pdf2image(path=job_dir + filename1 + '.pdf', outputDir=job_dir, filename=filename1, format='TIFF')
 
     # Output #
-    add_image_tif(job_dir=job_dir, filename0=filename0, filename1=filename1, out_filename=out_filename)
+    add_image_tif(job_dir=job_dir, filename0=filename0, filename1=filename1)
 
 
 def bmp2png(out_dir=''):
