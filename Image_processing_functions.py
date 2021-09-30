@@ -51,7 +51,7 @@ def image_output(
     if format == 'JPEG':
         cnt = 0
         for page in pages:
-            myfile = outputDir + '/' + filename + str(cnt) + '.jpg'
+            myfile = outputDir + '/' + filename + '_' + str(cnt) + '.jpg'
             cnt += 1
             page.save(myfile, 'JPEG')
             print('Output: ', myfile)
@@ -59,7 +59,7 @@ def image_output(
     elif format == 'PNG':
         cnt = 0
         for page in pages:
-            myfile = outputDir + '/' + filename + str(cnt) + '.png'
+            myfile = outputDir + '/' + filename + '_' + str(cnt) + '.png'
             cnt += 1
             page.save(myfile, 'PNG')
             print('Output: ', myfile)
@@ -180,7 +180,7 @@ def pdf2image_dir(
 
 
 def saveTiffStack(
-        save_path='pdf2image_compare wd/saveTiffStack result tiff.tif',
+        save_path=cwd+'\\saveTiffStack result tiff.tif',
         imgs: 'list' = None
 ):
     stack = []
@@ -240,14 +240,15 @@ def add_image(
 
 
 def add_image_tif(
-        job_dir='pdf2image_compare wd/',
+        path=cwd,
         filename0='Receipt Excel_gray',  # tiff, !filename0 must be bigger than filename1 (pixel size)
         filename1='Receipt Python3_gray', # tiff
         grayscale=True
 ):
+    path = path.replace('\\', '/')
     """
     Add img1 on img0. img0 is changed to cyan.
-    :param job_dir:
+    :param path:
     :param filename0:
     :param filename1:
     :param grayscale: True/False
@@ -261,13 +262,12 @@ def add_image_tif(
             f1_list.append(file)
 
     for f0, f1 in zip(f0_list, f1_list):
-
+        # Output filename
         out_filename = '{} on {}'.format(f1.split('.')[0], f0.split('.')[0])
-
         # Read (Multi-frame Tiff file)
-        ret0, imgs0 = cv.imreadmulti(job_dir + f0)
-        ret1, imgs1 = cv.imreadmulti(job_dir + f1)
-
+        ret0, imgs0 = cv.imreadmulti(path + '/' + f0)
+        ret1, imgs1 = cv.imreadmulti(path + '/' + f1)
+        # Add img1 on img0
         cnt = 0
         for img0, img1 in zip(imgs0, imgs1):
 
@@ -309,8 +309,8 @@ def add_image_tif(
             cnt += 1
 
         # Output #
-        print('Output: ', job_dir + '\\' + out_filename + '.tif')
-        saveTiffStack(save_path=job_dir + '\\' + out_filename + '.tif', imgs=imgs0)
+        print('Output: ', path + '\\' + out_filename + '.tif')
+        saveTiffStack(save_path=path + '\\' + out_filename + '.tif', imgs=imgs0)
 
 
 def add_image_all(
@@ -397,7 +397,7 @@ def pdf2png_compare(
 
 
 def pdf2tiff_compare(
-        job_dir='pdf2image_compare wd/',
+        path='pdf2image_compare wd/',
         filename0='Receipt Excel',
         filename1='Receipt Python3',
         page_off=True,
@@ -406,17 +406,17 @@ def pdf2tiff_compare(
         grayscale=True,
 ):
     # First file #
-    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=job_dir, filename=filename0, format='TIFF',
+    pdf2image(path=path + filename0 + '.pdf', outputDir=path, filename=filename0, format='TIFF',
               page_off=page_off, page_length=page_length, separation=separation,
               grayscale=grayscale)
 
     # Second file #
-    pdf2image(path=job_dir + filename1 + '.pdf', outputDir=job_dir, filename=filename1, format='TIFF',
+    pdf2image(path=path + filename1 + '.pdf', outputDir=path, filename=filename1, format='TIFF',
               page_off=page_off, page_length=page_length, separation=separation,
               grayscale=grayscale)
 
     # Output #
-    add_image_tif(job_dir=job_dir, filename0=filename0, filename1=filename1, grayscale=grayscale)
+    add_image_tif(path=path, filename0=filename0, filename1=filename1, grayscale=grayscale)
 
 
 def bmp2png(out_dir=''):

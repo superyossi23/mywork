@@ -73,11 +73,14 @@ class MainWindow(qtw.QWidget):
         execute_form_layout = qtw.QGridLayout()
         execute_form_layout.addWidget(qtw.QLabel('# execute_form', self), 1, 1, 1, 10)
         execute_form_layout.addWidget(self.pdf2image_btn, 2, 1, 1, 1)
-        execute_form_layout.addWidget(qtw.QLabel('<b># pdf2image()</b>', self), 2, 2, 1, 1)
+        execute_form_layout.addWidget(qtw.QLabel(
+            '<b># pdf2image()</b> :pdf -> image (jpg/png/tif)', self), 2, 2, 1, 1)
         execute_form_layout.addWidget(self.pdf2image_dir_btn, 3, 1, 1, 1)
-        execute_form_layout.addWidget(qtw.QLabel('<b># pdf2image_dir()</b>', self), 3, 2, 1, 1)
+        execute_form_layout.addWidget(qtw.QLabel(
+            '<b># pdf2image_dir()</b> :Convert all pdf files to images in the directory.', self), 3, 2, 1, 1)
         execute_form_layout.addWidget(self.add_image_tiff_btn, 4, 1, 1, 1)
-        execute_form_layout.addWidget(qtw.QLabel('<b># add_image_tiff()</b>', self), 4, 2, 1, 1)
+        execute_form_layout.addWidget(qtw.QLabel(
+            '<b># add_image_tiff()</b> :Add filename1 to filename0 (pdf -> tif).', self), 4, 2, 1, 1)
         # execute_form_layout.addWidget(self.pageSelectBtn, 3, 1, 1, 1)
         # execute_form_layout.addWidget(qtw.QLabel('<b># onPageSelect()</b>', self), 3, 2, 1, 1)
         # Set GridLayout to execute_form_layout
@@ -191,8 +194,14 @@ class MainWindow(qtw.QWidget):
         )
 
     def add_image_tif_exe(self):
+        # LOG #
+        print('path:', self.path_entry.text())
+        print('filename0', self.filename0_entry.text())
+        print('filename1', self.filename1_entry.text())
+        print('grayscale:', self.grayscale_check.isChecked())
+
         add_image_tif(
-            job_dir=self.path_entry.text(),
+            path=self.path_entry.text(),
             filename0=self.filename0_entry.text(),
             filename1=self.filename1_entry.text(),
             grayscale=self.grayscale_check.isChecked()
