@@ -23,27 +23,25 @@ import cv2 as cv
 
 # Global settings -----------------------------------------------------------------
 cwd = os.getcwd()
-wd = 'C:/Users/A/Desktop/pythonProject/opencvProject/pdf2image_compare wd'
 
 job_dir = 'pdf2image_compare wd'
 dpi = 300
 filename0 = 'Receipt Excel'
 filename1 = 'Receipt Python3'
 page_off = True
-page_length = 10
+page_length = 60
 separation = 10
-page_select = [1, 1]
 grayscale = True
 
 # ---------------------------------------------------------------------------------
 
 def image_output(
-        pages, outputDir='some directory', format='TIFF', filename='output file name'
+        pages: list, outputDir, format='TIFF', filename='output file name'
 ):
     """
-    :param pages:
-    :param outputDir:
-    :param format:
+    :param pages: convert_from_path()
+    :param outputDir: output file directory
+    :param format: TIFF/JPEG/PNG
     :param filename: Select output file name
     :return:
     """
@@ -71,14 +69,13 @@ def image_output(
 
 
 def pdf2image(
-    path='pdf2image_compare wd',
+    path,
     dpi=300,
     filename='Receipt Python3',
     format='TIFF',
     page_off=False,
     page_length=1,
     separation=10,
-    page_select=[1],
     grayscale=False
 ):
     """
@@ -89,8 +86,6 @@ def pdf2image(
     :param page_off: True/False. Whether manage pages or not.
     :param page_length: int. False. Convert every pages
     :param separation: Divide all pages into the selected number of pages
-    :param page_select: List object. Select necessary pages. page_off must be False.
-           odd: first_page, even: last_pages. e.g. [1,2, 4,6, 9,9]
     :return:
     """
     # Settings #
@@ -255,7 +250,7 @@ def add_image_tif(
     :return:
     """
     f0_list, f1_list = [], []
-    for file in os.listdir(wd):
+    for file in os.listdir(path):
         if file.startswith(filename0) and file.endswith('.tif'):
             f0_list.append(file)
         if file.startswith(filename1) and file.endswith('.tif'):

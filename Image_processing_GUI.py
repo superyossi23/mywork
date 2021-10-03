@@ -5,13 +5,28 @@ from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
 from PyQt5 import QtCore as qtc
 import sys
+import ast
 
 from Image_processing_functions import *
 
 
-class MainWindow(qtw.QWidget):
 
-    page_select = qtc.pyqtSignal([str], ['QObject'])
+class MainWindow(qtw.QWidget):
+    # Store settings
+    settings = qtc.QSettings('my_python', 'Image_processing_GUI')
+    # Clear settings
+    # settings.clear()
+
+    # SETTINGS #
+    path = settings.value('path')
+    dpi = settings.value('dpi')
+    format = settings.value('format')
+    filename0 = settings.value('filename0')
+    filename1 = settings.value('filename1')
+    grayscale = settings.value('grayscale')
+    page_off = settings.value('page_off')
+    page_length = settings.value('page_length')
+    separation = settings.value('separation')
 
     def __init__(self):
         """MainWindow constructor"""
@@ -21,18 +36,16 @@ class MainWindow(qtw.QWidget):
         self.setWindowTitle('IMAGE PROCESSING APP')
         self.resize(800, 600)
 
-        # Create out widgets ---------------------------------------------------------
-        self.path_entry = qtw.QLineEdit(cwd, self, maxLength=99)
-        self.dpi_spin = qtw.QSpinBox(self, value=dpi, maximum=300, minimum=100, singleStep=50)
-        self.filename0_entry = qtw.QLineEdit(filename0, self)
-        self.filename1_entry = qtw.QLineEdit(filename1, self)
+        # Create widgets -------------------------------------------------------------
+        self.path_entry = qtw.QLineEdit(self.path, self, maxLength=99)
+        self.dpi_spin = qtw.QSpinBox(self, value=self.dpi, maximum=300, minimum=100, singleStep=50)
+        self.filename0_entry = qtw.QLineEdit(self.filename0, self)
+        self.filename1_entry = qtw.QLineEdit(self.filename1, self)
         self.format_entry = qtw.QComboBox(self)
         self.grayscale_check = qtw.QCheckBox('grayscale', self)
         self.page_off_check = qtw.QCheckBox('page_off', self)
-        self.page_length_entry = qtw.QLineEdit('', self, placeholderText='Int only...')
-        self.separation_spin = qtw.QSpinBox(self, value=separation)
-        self.page_select_entry = qtw.QLineEdit('', self,  placeholderText='Enter page numbers...', maxLength=50)
-
+        self.page_length_spin = qtw.QSpinBox(self, value=self.page_length)
+        self.separation_spin = qtw.QSpinBox(self, value=self.separation)
         self.pdf2image_btn = qtw.QPushButton(
             'pdf2image',
             clicked=self.pdf2image_exe
@@ -46,8 +59,6 @@ class MainWindow(qtw.QWidget):
             clicked=self.add_image_tif_exe
         )
 
-        self.pageSelectBtn = qtw.QPushButton('PageSelect', clicked=self.onPageSelect)
-
         # Configure widgets -------------------------------------------------------------
         # Add event categories
         self.format_entry.addItems(
@@ -58,8 +69,6 @@ class MainWindow(qtw.QWidget):
         # Create main_layout
         main_layout = qtw.QHBoxLayout()
         self.setLayout(main_layout)
-        # result_layout = xxx
-
 
         # params_layout
         params_layout = qtw.QVBoxLayout()
@@ -81,8 +90,6 @@ class MainWindow(qtw.QWidget):
         execute_form_layout.addWidget(self.add_image_tiff_btn, 4, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
             '<b># add_image_tiff()</b> :Add filename1 to filename0 (pdf -> tif).', self), 4, 2, 1, 1)
-        # execute_form_layout.addWidget(self.pageSelectBtn, 3, 1, 1, 1)
-        # execute_form_layout.addWidget(qtw.QLabel('<b># onPageSelect()</b>', self), 3, 2, 1, 1)
         # Set GridLayout to execute_form_layout
         execute_form.setLayout(execute_form_layout)
         # Settings
@@ -92,7 +99,7 @@ class MainWindow(qtw.QWidget):
         settings_form_layout = qtw.QGridLayout()
         settings_form_layout.addWidget(qtw.QLabel('# settings_form', self), 1, 1, 1, 10)
         settings_form_layout.addWidget(self.path_entry, 2, 1, 1, 9)  # (row, column, row span, column span)
-        settings_form_layout.addWidget(qtw.QLabel('<b># path</b>', self, margin=10), 2, 10, 1, 1)
+        settings_form_layout.addWidget(qtw.QLabel('<b># path</b>', self), 2, 10, 1, 1)
         settings_form_layout.addWidget(self.dpi_spin, 3, 1, 1, 1)
         settings_form_layout.addWidget(qtw.QLabel('<b># dpi</b>', self), 3, 2, 1, 1)
         settings_form_layout.addWidget(self.format_entry, 3, 3, 1, 1)
@@ -110,58 +117,45 @@ class MainWindow(qtw.QWidget):
         optional_form_layout = qtw.QGridLayout()
         optional_form_layout.addWidget(qtw.QLabel('# optional_form', self), 1, 1, 1, 10)
         optional_form_layout.addWidget(self.grayscale_check, 2, 1, 1, 1)
-        optional_form_layout.addWidget(self.page_off_check, 2, 3, 1, 1)
-        optional_form_layout.addWidget(self.page_length_entry, 3, 1, 1, 1)
-        optional_form_layout.addWidget(qtw.QLabel('<b># page_length</b>', self), 3, 2, 1, 1)
-        optional_form_layout.addWidget(self.separation_spin, 3, 3, 1, 1)
-        optional_form_layout.addWidget(qtw.QLabel('<b># separation</b>', self), 3, 4, 1, 1)
-        optional_form_layout.addWidget(self.page_select_entry, 3, 5, 1, 2)
-        optional_form_layout.addWidget(qtw.QLabel('<b># page_select</b>', self), 3, 7, 1, 1)
+        optional_form_layout.addWidget(self.page_off_check, 2, 2, 1, 1)
+        optional_form_layout.addWidget(self.page_length_spin, 3, 2, 1, 1)
+        optional_form_layout.addWidget(qtw.QLabel('<b># page_length</b>', self), 3, 3, 1, 1)
+        optional_form_layout.addWidget(self.separation_spin, 3, 4, 1, 1)
+        optional_form_layout.addWidget(qtw.QLabel('<b># separation</b>', self), 3, 5, 1, 1)
         # Set GridLayout to optional_form_layout
         optional_form.setLayout(optional_form_layout)
 
         # Connect Events --------------------------------------------------------------
-
         # grayscale_check -> True
         self.grayscale_check.setChecked(True)
         # page_off_check -> True
         self.page_off_check.setChecked(True)
-        self.page_off_check.toggled.connect(self.page_length_entry.setDisabled)
+        self.page_off_check.toggled.connect(self.page_length_spin.setDisabled)
         self.page_off_check.toggled.connect(self.separation_spin.setDisabled)
-        self.page_off_check.toggled.connect(self.page_select_entry.setDisabled)
-        # page_length_entry -> False
-        self.page_length_entry.setDisabled(True)
+        # page_length_spin -> False
+        self.page_length_spin.setDisabled(True)
         # separation_spin -> False
         self.separation_spin.setDisabled(True)
-        # page_select_entry -> False
-        self.page_select_entry.setDisabled(True)
-        # On going
-        self.pageSelectBtn.setDisabled(True)
 
+        # Loaded settings info
+        print('* Loaded info *')
+        print("cwd is", self.settings.value('path'))
+        print('filename0 is', self.settings.value('filename0'))
+        print('filename1 is', self.settings.value('filename1'))
+        print('grayscale is', self.settings.value('grayscale'))
+        print('page_off is', self.settings.value('page_off'))
         # End main UI code
         self.show()
 
-    # Slots
-    def onPageSelect(self):
-        # self.page_select[str].emit(self.page_select_entry.text())
-        print('type:', type(self.page_select))
-        print('page_select:', self.page_select_entry.text())
-
     # Functions
     def pdf2image_exe(self):
-        # self.page_select[str].connect()
-        # text = self.page_select_entry.text()
-        # print('text:', text)
-        # text = text.replace(' ', '')
-        # intlist = [int(x) for x in text]
-        # self.page_select[str].emit(intlist)
         # LOG #
         print('path:', self.path_entry.text())
         print('dpi:', self.dpi_spin.text())
         print('filename:', self.filename0_entry.text())
         print('format:', self.format_entry.currentText())
         print('page_off:', self.page_off_check.isChecked())
-        print('page_length:', self.page_length_entry.text())
+        print('page_length:', self.page_length_spin.text())
         print('separation:', self.separation_spin.text())
         print('grayscale:', self.grayscale_check.isChecked())
 
@@ -171,9 +165,8 @@ class MainWindow(qtw.QWidget):
             filename=self.filename0_entry.text(),
             format=self.format_entry.currentText(),
             page_off=self.page_off_check.isChecked(),
-            page_length=self.page_length_entry.text(),
+            page_length=self.page_length_spin.text(),
             separation=self.separation_spin.text(),
-            page_select=self.page_select_entry.text(),
             grayscale=self.grayscale_check.isChecked()
         )
 
@@ -206,6 +199,22 @@ class MainWindow(qtw.QWidget):
             filename1=self.filename1_entry.text(),
             grayscale=self.grayscale_check.isChecked()
         )
+
+    def closeEvent(self, e):
+        self.saveSettings()
+
+    # Save settings info
+    def saveSettings(self):
+        # settings = qtc.QSettings('my_python', 'Image_processing_GUI')
+        self.settings.setValue('path', self.path_entry.text())
+        self.settings.setValue('dpi', self.dpi_spin.text())
+        self.settings.setValue('format', self.format_entry.currentText())
+        self.settings.setValue('filename0', self.filename0_entry.text())
+        self.settings.setValue('filename1', self.filename1_entry.text())
+        self.settings.setValue('grayscale', self.grayscale_check.isChecked())
+        self.settings.setValue('page_off', self.page_off_check.isChecked())
+        self.settings.setValue('page_length', self.page_length_spin.text())
+        self.settings.setValue('separation', self.separation_spin.text())
 
 
 if __name__ == '__main__':
