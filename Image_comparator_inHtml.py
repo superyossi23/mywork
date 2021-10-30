@@ -1,58 +1,76 @@
 from webbrowser import open_new_tab
 import os
+from htmlModule import *
 
-# IMPORT
+
+# SETTINGS
 wd = 'C:/Users/A/Desktop/stock_data'
+cwd = os.getcwd()
 filelist = os.listdir(wd)
 filelist = list(filter(lambda x: x.endswith('.png'), filelist))
+out_file = wd + '/' + 'Image_comparator.html'
+tag_name = 'Comparator'
 
-out_file = 'out_file.html'
-
-# Read html wrapper file
+# Read html base file
 # temp_wrapper = 'temp_wrapper.html'
 # htmlFile = open(temp_wrapper, 'r', encoding='UTF-8')
-# wrapper = htmlFile.read()
-
-wrapper = """
+# base = htmlFile.read()
+base = """
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>%s</title>
 </head>
 <body>
+<table border="1">
+</table>
 </body>
 </html>
 """
 
-base = '<img src=%s title=%s>'
+# Repeat pattern
+wrapper = """
+<tr>
+  <td>%s<img src=%s></td>
+  <td>%s<img src=%s></td>
+</tr>
+"""
 
 body = ''
-# 2 columns ver.
-for i in range(len(filelist)):
-    if i == 0:  # for the first image
-        body = base
-    elif i%2 == 1:  # column 0
-        body = body + base
-    elif i >= 1 and i%2 == 0:  # column 1
-        body = body + base + '<br>'
-    else:
-        print('Something is wrong')
-# Insert body to html
-index = wrapper.find('</body>')
-wrapper = wrapper[:index] + body + wrapper[index:]
+# 2 COLUMNS VER.
+# In the case of 1 column missing
+if len(filelist)%2 == 1:
+    filelist.append('None')
+# Add wrapper-str to <body>
+for i in range(len(filelist)//2):
+    body = body + wrapper
+# Insert content to <table>
+index = base.find('</table>')
+base = base[:index] + body + base[index:]
 
-# Make tuple for wrapper
-wrap_info = []
-for f in filelist:
-    wrap_info.append(wd + '/' + f)
-    wrap_info.append(f)
+# Divide filelist into 2 filelists
+# Upper/Lower
+filelist0 = filelist[:len(filelist)//2]
+filelist1 = filelist[len(filelist)//2:]
+# Odd/Even
+# filelist0, filelist1 = get_oddeven(filelist)
+
+# Make a tuple for wrapper
+wrap_info = [tag_name]
+for f0,f1 in zip(filelist0, filelist1):
+    wrap_info.append(f0)  # Title
+    wrap_info.append(f0)  # Image
+    wrap_info.append(f1)  # Title
+    wrap_info.append(f1)  # Image
+# List to tuple (for wrapper)
 wrap_info = tuple(wrap_info)
 
 # WRAPPER
-main = wrapper % wrap_info
-# main = wrapper % (wd +'/' + filelist[0], filelist[0],
-#                   wd +'/' + filelist[1], filelist[1],
+main = base % wrap_info
+# Explanation
+# main = base % (filelist0[0], filelist1[0],
+#                filelist0[1], filelist1[1],
 #                   :
 #                   )
 
