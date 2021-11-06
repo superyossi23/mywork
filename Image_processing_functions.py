@@ -6,25 +6,21 @@ def saveTiffStack: Save multi-frame tiff file
 def add_image: Add an img1 to an img0
 def add_image_tif: Add an img1 to an img0 (multi-frame TIFF ver.)
 def add_image_all: Add all the images to the another
-def pdf2png_compare: Execute add_image_all to 2 pdf files
 def pdf2tiff_compare: Execute add_image_tif to 2 pdf files
 def bmp2png: Convert bmp image to png image
 
 """
-import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import glob
 from pdf2image import convert_from_path
 import os
 import glob
 import cv2 as cv
-
+import matplotlib.pyplot as plt
 
 # Global settings -----------------------------------------------------------------
 cwd = os.getcwd()
 
-job_dir = 'pdf2image_compare wd'
 dpi = 300
 filename0 = 'Receipt Excel'
 filename1 = 'Receipt Python3'
@@ -36,43 +32,43 @@ grayscale = True
 # ---------------------------------------------------------------------------------
 
 def image_output(
-        pages: list, outputDir, format='TIFF', filename='output file name'
+        pages: list, outputDir: str, format='.tif', filename='output file name'
 ):
     """
     :param pages: convert_from_path()
     :param outputDir: output file directory
-    :param format: TIFF/JPEG/PNG
+    :param format: .tif/.jpg/.png
     :param filename: Select output file name
     :return:
     """
     # JPEG #
-    if format == 'JPEG':
+    if format == '.jpg':
         cnt = 0
         for page in pages:
-            myfile = outputDir + '/' + filename + '_' + str(cnt) + '.jpg'
+            myfile = outputDir + '/' + filename + '_' + str(cnt) + format
             cnt += 1
             page.save(myfile, 'JPEG')
             print('Output: ', myfile)
     # PNG #
-    elif format == 'PNG':
+    elif format == '.png':
         cnt = 0
         for page in pages:
-            myfile = outputDir + '/' + filename + '_' + str(cnt) + '.png'
+            myfile = outputDir + '/' + filename + '_' + str(cnt) + format
             cnt += 1
             page.save(myfile, 'PNG')
             print('Output: ', myfile)
     # TIFF #
-    elif format == 'TIFF':
+    elif format == '.tif':
         myfile = outputDir + '/' + filename + '.tif'
         pages[0].save(myfile, 'TIFF', compression='tiff_deflate', save_all=True, append_images=pages[1:])
         print('Output: ', myfile)
 
 
 def pdf2image(
-    path,
+    path: str,
     dpi=300,
     filename='Receipt Python3',
-    format='TIFF',
+    format='.tif',
     page_off=False,
     page_length=1,
     separation=10,
@@ -82,7 +78,7 @@ def pdf2image(
     :param path: PDF file path
     :param dpi: Select resolution
     :param filename: Input filename
-    :param format: 'TIFF'/'PNG'/'JPEG'
+    :param format: '.tif'/'.png'/'.jpg'
     :param page_off: True/False. Whether manage pages or not.
     :param page_length: int. False. Convert every pages
     :param separation: Divide all pages into the selected number of pages
@@ -93,9 +89,6 @@ def pdf2image(
     pdf_path = path + '/' + filename + '.pdf'
     # Create ppm dir
     ppmData = path+'/PPM files/'
-    if not page_off:
-        quotient = page_length // separation
-        remainder = page_length % separation
     # Create dir if path does not exist
     if not os.path.exists(path):
         os.mkdir(path)
@@ -113,6 +106,9 @@ def pdf2image(
     # if page_off == False ---------------------------------------------------------
     elif not page_off:
         print('page_length =', page_length)
+        # Parameter for page setting
+        quotient = page_length // separation
+        remainder = page_length % separation
         # Quotient
         for j in range(quotient):
             # Convert #
@@ -136,9 +132,9 @@ def pdf2image(
 
 
 def pdf2image_dir(
-    path='pdf2image_compare wd',
+    path: str,
     dpi=300,
-    format='TIFF',
+    format='.tif',
     page_off=True,
     grayscale=False
 ):
@@ -146,7 +142,7 @@ def pdf2image_dir(
     Convert all pdf to image in the dir.
     :param path: PDF file path
     :param dpi: Select resolution
-    :param format: 'TIFF'/'PNG'/'JPEG'
+    :param format: '.tif'/'.png'/'.jpg'
     :param page_off: True/False. Whether manage pages or not.
     """
     # Settings #
@@ -163,20 +159,20 @@ def pdf2image_dir(
 
     # if page_off == True ----------------------------------------------------------
     if page_off:
-        for i in range(len(filelist)):
+        for f in filelist:
             print('All pdf pages will be converted')
             # Convert #
-            pages = convert_from_path(pdf_path=path+'\\'+filelist[i], dpi=dpi, output_folder=ppmData, grayscale=grayscale)
+            pages = convert_from_path(pdf_path=path+'\\'+f, dpi=dpi, output_folder=ppmData, grayscale=grayscale)
             # Output #
-            image_output(pages, path, format, filelist[i].split('.pdf')[0])
+            image_output(pages, path, format, f.split('.pdf')[0])
 
     else:
         raise Exception('Only work when page_off=True')
 
 
 def saveTiffStack(
-        save_path=cwd+'\\saveTiffStack result tiff.tif',
-        imgs: 'list' = None
+        save_path: str,
+        imgs: 'list'
 ):
     stack = []
     for img in imgs:
@@ -185,8 +181,8 @@ def saveTiffStack(
 
 
 def add_image(
-        job_dir='pdf2image_compare wd/image/',
-        filename0='Receipt Excel',  # pdf, filename0 must be bigger than filename1
+        job_dir: str,
+        filename0='Receipt Excel',  # pdf, filename_t must be bigger than filename1
         filename1='Receipt Python3', # pdf
         out_filename='add_image result',
 ):
@@ -235,16 +231,16 @@ def add_image(
 
 
 def add_image_tif(
-        path=cwd,
-        filename0='Receipt Excel_gray',  # tiff, !filename0 must be bigger than filename1 (pixel size)
+        path: str,
+        filename0='Receipt Excel_gray',  # tiff, !filename_t must be bigger than filename1 (pixel size)
         filename1='Receipt Python3_gray', # tiff
         grayscale=True
 ):
     path = path.replace('\\', '/')
     """
-    Add img1 on img0. img0 is changed to cyan.
+    Add img1 on img0. img0 is changed to color:cyan.
     :param path:
-    :param filename0:
+    :param filename_t:
     :param filename1:
     :param grayscale: True/False
     :return:
@@ -309,10 +305,10 @@ def add_image_tif(
 
 
 def add_image_all(
-    filename0='Receipt Excel',  # pdf, filename0 must be equal/bigger than filename1
+    job_dir,
+    filename0='Receipt Excel',  # pdf, filename_t must be equal/bigger than filename1
     filename1='Receipt Python3', # pdf
     out_filename='add_image_all result',
-    job_dir='pdf2image_compare wd/'
 ):
     """
     Add img1 on img0 (for PNG/JPEG)
@@ -367,32 +363,8 @@ def add_image_all(
         cnt += 1
 
 
-def pdf2png_compare(
-        job_dir='pdf2image_compare wd/',
-        filename0='Receipt Excel',
-        filename1='Receipt Python3',
-        page_off=True,
-        page_length=1,
-        separation=10
-):
-    """
-    Execute add_image_all to 2 pdf files
-    """
-
-    # First file #
-    pdf2image(path=job_dir + filename0 + '.pdf', outputDir=job_dir, filename=filename0,
-              page_off=page_off, page_length=page_length, separation=separation)
-
-    # Second file #
-    pdf2image(path=job_dir + filename1 + '.pdf', outputDir=job_dir, filename=filename1,
-              page_off=page_off, page_length=page_length, separation=separation)
-
-    # Output #
-    add_image_all(filename0=filename0, filename1=filename1, job_dir=job_dir)
-
-
 def pdf2tiff_compare(
-        path='pdf2image_compare wd/',
+        path: str,
         filename0='Receipt Excel',
         filename1='Receipt Python3',
         page_off=True,
@@ -401,29 +373,90 @@ def pdf2tiff_compare(
         grayscale=True,
 ):
     # First file #
-    pdf2image(path=path + filename0 + '.pdf', outputDir=path, filename=filename0, format='TIFF',
+    pdf2image(path=path, filename=filename0, format='.tif',
               page_off=page_off, page_length=page_length, separation=separation,
               grayscale=grayscale)
 
     # Second file #
-    pdf2image(path=path + filename1 + '.pdf', outputDir=path, filename=filename1, format='TIFF',
+    pdf2image(path=path, filename=filename1, format='.tif',
               page_off=page_off, page_length=page_length, separation=separation,
               grayscale=grayscale)
 
     # Output #
     add_image_tif(path=path, filename0=filename0, filename1=filename1, grayscale=grayscale)
 
+###########################################################################################################
+###########################################################################################################
 
-def bmp2png(out_dir=''):
-    """
-    out_dir: output directory name
-    """
+
+def bmp2png(out_dir: str):
     cnt = 0
     for img in glob.glob('images/*.bmp'):
-        Image.open(img).resize((300,300)).save(os.path.join(out_dir, str(cnt) + '.png'))
+        Image.open(img).resize((300,300)).save(os.path.join(out_dir, + '_' + str(cnt) + '.png'))
         cnt += 1
 
 
+# Mask image for making transparent image
+def mask_image(img, b_from, g_from, r_from, b_to, g_to, r_to):
+    color_lower = np.array([b_from, g_from, r_from, 255])
+    color_upper = np.array([b_to, g_to, r_to, 255])
+    img_mask = cv.inRange(img, color_lower, color_upper)
+    img_bool = cv.bitwise_not(img, img, mask=img_mask)
+    return img_bool
+
+
+def image2image(
+        path: str,
+        direct_exe0: bool,
+        direct_exe1: bool,
+        regional_exe0: bool,
+        regional_exe1: bool,
+        input='.tif',
+        output='.png',
+        direct_dic={'b0': 255, 'g0': 255, 'r0': 255,
+                    'b1': 255, 'g1': 255, 'r1': 255,
+                    },
+        from_dic = {'b0_from': 255, 'g0_from': 255, 'r0_from': 255,
+                    'b1_from': 255, 'g1_from': 255, 'r1_from': 255,
+                    'b2_from': 255, 'g2_from': 255, 'r2_from': 255,
+                    },
+        to_dic = {'b0_to': 255, 'g0_to': 255, 'r0_to': 255,
+                  'b1_to': 255, 'g1_to': 255, 'r1_to': 255,
+                  'b2_to': 255, 'g2_to': 255, 'r2_to': 255,
+                  }
+):
+    """
+    :param path:
+    :param input: .tif/.png/.jpg/.bmp
+    :param output: .tif/.png/.jpg/.bmp
+    :return:
+    Convert all the image in the directory to arbitrary format
+    """
+    # Settings #
+    # path = path.replace('\\', '/')
+    # Job directory
+    filelist = os.listdir(path)
+    filelist = list(filter(lambda x: x.endswith(input), filelist))
+
+    # Make image transparent
+    if output == '.png':
+        for f in filelist:
+            img = cv.imread(path + '\\' + f)
+            # Add alpha channel to RGB
+            if img.shape[2] == 3:
+                img = cv.cvtColor(img, cv.COLOR_BGR2BGRA)
+            # Convert to transparent
+            # direct_exe #
+            if direct_exe0:
+                img[:, :, 3] = np.where(np.all(img == (direct_dic['b0'], direct_dic['g0'], direct_dic['r0']),
+                                               axis=-1), 0, 255)
+            # regional_exe #
+            if regional_exe0:
+                img = mask_image(img, from_dic['b0_from'], from_dic['g0_from'], from_dic['r0_from'],
+                                 from_dic['b0_to'], from_dic['g0_to'], from_dic['r0_to'],
+                                 )
+            # Save #
+            cv.imwrite(path + '\\' + f.split('.')[0] + output, img)
 
 
 
