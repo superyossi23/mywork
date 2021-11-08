@@ -66,8 +66,8 @@ class MainWindow(qtw.QWidget):
             'pdf2image_dir',
             clicked=self.pdf2image_dir_exe
         )
-        self.add_image_tiff_btn = qtw.QPushButton(
-            'add_image_tiff',
+        self.add_image_tif_btn = qtw.QPushButton(
+            'add_image_tif',
             clicked=self.add_image_tif_exe
         )
         # ---- #
@@ -141,9 +141,9 @@ class MainWindow(qtw.QWidget):
         execute_form_layout.addWidget(self.pdf2image_dir_btn, 3, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
             '<b># pdf2image_dir()</b> :Convert all pdf files to images in the path.', self), 3, 2, 1, 1)
-        execute_form_layout.addWidget(self.add_image_tiff_btn, 4, 1, 1, 1)
+        execute_form_layout.addWidget(self.add_image_tif_btn, 4, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
-            '<b># add_image_tiff()</b> :Add filename1 to filename_t (pdf -> tif).', self), 4, 2, 1, 1)
+            '<b># add_image_tif()</b> :Add filename1 on filename0 (tif -> tif).', self), 4, 2, 1, 1)
         # Set GridLayout to execute_form_layout
         execute_form.setLayout(execute_form_layout)
         # Settings box #
@@ -351,9 +351,9 @@ class MainWindow(qtw.QWidget):
         self.settings.setValue('b0_from', self.b0_from_spn.text())
         self.settings.setValue('g0_from', self.g0_from_spn.text())
         self.settings.setValue('r0_from', self.r0_from_spn.text())
-        self.settings.setValue('b0_to', self.b0_to_spin.text())
-        self.settings.setValue('g0_to', self.g0_to_spin.text())
-        self.settings.setValue('r0_to', self.r0_to_spin.text())
+        self.settings.setValue('b0_to', self.b0_to_spn.text())
+        self.settings.setValue('g0_to', self.g0_to_spn.text())
+        self.settings.setValue('r0_to', self.r0_to_spn.text())
         self.settings.setValue('regional_exe1', self.regional_exe1_chk.isChecked())
         self.settings.setValue('b1_from', self.b1_from_spn.text())
         self.settings.setValue('g1_from', self.g1_from_spn.text())

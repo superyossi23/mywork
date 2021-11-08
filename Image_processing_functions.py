@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 cwd = os.getcwd()
 
 dpi = 300
-filename0 = 'Receipt Excel'
-filename1 = 'Receipt Python3'
+filename0 = 'Receipt Excel_color'
+filename1 = 'Receipt Python3_color'
 page_off = True
 page_length = 60
 separation = 10
@@ -82,6 +82,7 @@ def pdf2image(
     :param page_off: True/False. Whether manage pages or not.
     :param page_length: int. False. Convert every pages
     :param separation: Divide all pages into the selected number of pages
+    :param grayscale:
     :return:
     """
     # Settings #
@@ -239,10 +240,10 @@ def add_image_tif(
     path = path.replace('\\', '/')
     """
     Add img1 on img0. img0 is changed to color:cyan.
-    :param path:
-    :param filename_t:
+    :param path: Working directory.
+    :param filename0:
     :param filename1:
-    :param grayscale: True/False
+    :param grayscale: True/False. True if input image is grayscale.
     :return:
     """
     f0_list, f1_list = [], []
@@ -261,24 +262,28 @@ def add_image_tif(
         # Add img1 on img0
         cnt = 0
         for img0, img1 in zip(imgs0, imgs1):
-
-            # img0 => img0_color
-            # Convert gray to RGB (img0)
+            # img0 => img0_color. Convert gray to RGB (img0)
             img0_color = np.zeros((img0.shape[0], img0.shape[1], 3), dtype='uint8')
 
             if grayscale:
+                # Threshold select for transparent region
                 ret0, mask0 = cv.threshold(img0, 240, 255, cv.THRESH_BINARY)  # white -> out
                 ret1, mask1 = cv.threshold(img1, 240, 255, cv.THRESH_BINARY)  # white -> out
-
-                rows, cols = img1.shape
-
+                # Error handling. In case of color image input.
+                if len(img1.shape) == 2:
+                    rows, cols = img1.shape
+                else:
+                    print('Something is wrong with img1.shape!! Select grayscale unchecked')
             else:
-                img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
-                img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-                ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # white -> out
-                ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # white -> out
-
-                rows, cols, channels = img1.shape
+                # Error handling. In case of gray image input.
+                if len(img1.shape) == 3:
+                    img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
+                    img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
+                    ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # white -> out
+                    ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # white -> out
+                    rows, cols, channels = img1.shape
+                else:
+                    print('Something is wrong with img1.shape!! Select grayscale checked')
 
             img0_color[:, :, 0:] = 255  # Black to White
             img0_color[:, :, 0] = mask0  # White to Color  # Color select is here
@@ -288,7 +293,7 @@ def add_image_tif(
 
             # White-out the BG in ROI
             img1_on_img0 = cv.bitwise_and(roi, roi, mask=mask1)
-            # Turned out to be unnecessary lines
+            # Turned out to be unnecessary lines ---------------
             # img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
             # Take only region of Mask from img1
             # mask_inv = cv.bitwise_not(mask1)
@@ -296,12 +301,13 @@ def add_image_tif(
             # Put img1 in ROI and modify the img0
             # dst = cv.add(img0_bg, img1_fg)  # ROI
             # img0[0:rows, 0:cols] = dst  # Full Image
+            # --------------------------------------------------
             imgs0[cnt] = img1_on_img0
             cnt += 1
 
         # Output #
-        print('Output: ', path + '\\' + out_filename + '.tif')
-        saveTiffStack(save_path=path + '\\' + out_filename + '.tif', imgs=imgs0)
+        print('Output: ', path + '/' + out_filename + '.tif')
+        saveTiffStack(save_path=path + '/' + out_filename + '.tif', imgs=imgs0)
 
 
 def add_image_all(
