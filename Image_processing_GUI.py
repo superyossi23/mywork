@@ -1,5 +1,5 @@
 """
-2021/11/06 Last modified
+2021/11/18 Last modified
 """
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
@@ -20,7 +20,8 @@ class MainWindow(qtw.QWidget):
     path = settings.value('path')
     dpi = settings.value('dpi')
     format = settings.value('format')
-    filename0 = settings.value('filename_t')
+    filename = settings.value('filename')
+    filename0 = settings.value('filename0')
     filename1 = settings.value('filename1')
     grayscale = settings.value('grayscale')
     page_off = settings.value('page_off')
@@ -51,6 +52,7 @@ class MainWindow(qtw.QWidget):
         # tab0 #
         self.path_ent = qtw.QLineEdit(self.path, self, maxLength=99, placeholderText='Enter file path...')
         self.dpi_spn = qtw.QSpinBox(self, value=self.dpi, maximum=300, minimum=100, singleStep=50)
+        self.filename_ent = qtw.QLineEdit(self.filename, self, placeholderText='Enter filename...')
         self.filename0_ent = qtw.QLineEdit(self.filename0, self, placeholderText='Enter filename...')
         self.filename1_ent = qtw.QLineEdit(self.filename1, self, placeholderText='Enter filename...')
         self.format_ent = qtw.QComboBox(self)
@@ -69,6 +71,10 @@ class MainWindow(qtw.QWidget):
         self.add_image_tif_btn = qtw.QPushButton(
             'add_image_tif',
             clicked=self.add_image_tif_exe
+        )
+        self.add_BefAft_btn = qtw.QPushButton(
+            'add_BefAft',
+            clicked=self.add_BefAft_exe
         )
         # ---- #
         # tab1 #
@@ -137,15 +143,19 @@ class MainWindow(qtw.QWidget):
         execute_form_layout.addWidget(qtw.QLabel('# execute_form', self), 1, 1, 1, 10)
         execute_form_layout.addWidget(self.pdf2image_btn, 2, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
-            '<b># pdf2image()</b> :pdf -> image (jpg/png/tif)', self), 2, 2, 1, 1)
+            '<b># pdf2image()</b> :pdf -> image (jpg/png/tif). Be careful with "grayscale" checkbox.', self), 2, 2, 1, 1)
         execute_form_layout.addWidget(self.pdf2image_dir_btn, 3, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
             '<b># pdf2image_dir()</b> :Convert all pdf files to images in the path.', self), 3, 2, 1, 1)
         execute_form_layout.addWidget(self.add_image_tif_btn, 4, 1, 1, 1)
         execute_form_layout.addWidget(qtw.QLabel(
             '<b># add_image_tif()</b> :Add filename1 on filename0 (tif -> tif).', self), 4, 2, 1, 1)
+        execute_form_layout.addWidget(self.add_BefAft_btn, 5, 1, 1, 1)
+        execute_form_layout.addWidget(qtw.QLabel(
+            '<b># add_BefAft()</b> :Add filename1 on filename0 (tif -> tif). Previous: Cyan. Changed: Magenta', self), 5, 2, 1, 1)
         # Set GridLayout to execute_form_layout
         execute_form.setLayout(execute_form_layout)
+
         # Settings box #
         settings_form = qtw.QGroupBox('Settings')
         self.tab0.layout.addWidget(settings_form)
@@ -158,12 +168,15 @@ class MainWindow(qtw.QWidget):
         settings_form_layout.addWidget(qtw.QLabel('<b># dpi</b>', self), 3, 2, 1, 1)
         settings_form_layout.addWidget(self.format_ent, 3, 3, 1, 1)
         settings_form_layout.addWidget(qtw.QLabel('<b># format</b>', self), 3, 4, 1, 1)
-        settings_form_layout.addWidget(self.filename0_ent, 4, 1, 1, 3)
-        settings_form_layout.addWidget(qtw.QLabel('<b># filename0</b>', self), 4, 4, 1, 1)
-        settings_form_layout.addWidget(self.filename1_ent, 4, 5, 1, 3)
-        settings_form_layout.addWidget(qtw.QLabel('<b># filename1</b>', self), 4, 8, 1, 1)
+        settings_form_layout.addWidget(self.filename_ent, 4, 1, 1, 3)
+        settings_form_layout.addWidget(qtw.QLabel('<b># filename</b> :filename used for pdf2image', self), 4, 4, 1, 3)
+        settings_form_layout.addWidget(self.filename0_ent, 5, 1, 1, 3)
+        settings_form_layout.addWidget(qtw.QLabel('<b># filename0</b>', self), 5, 4, 1, 1)
+        settings_form_layout.addWidget(self.filename1_ent, 5, 5, 1, 3)
+        settings_form_layout.addWidget(qtw.QLabel('<b># filename1</b>', self), 5, 8, 1, 1)
         # Set GridLayout to settings_form_layout
         settings_form.setLayout(settings_form_layout)
+
         # Optional box #
         optional_form = qtw.QGroupBox('Optional')
         self.tab0.layout.addWidget(optional_form)
@@ -182,6 +195,7 @@ class MainWindow(qtw.QWidget):
 
         # Set tab0.layout to tab0
         self.tab0.setLayout(self.tab0.layout)
+
         # ---- #
         # tab1 #
         self.tab1.layout = qtw.QVBoxLayout()
@@ -246,7 +260,7 @@ class MainWindow(qtw.QWidget):
         # Loaded settings info ---------------------------------------------------------
         print('* Loaded info *')
         print("cwd is", self.settings.value('path'))
-        print('filename_t is', self.settings.value('filename_t'))
+        print('filename0 is', self.settings.value('filename0'))
         print('filename1 is', self.settings.value('filename1'))
         print('grayscale is', self.settings.value('grayscale'))
         print('page_off is', self.settings.value('page_off'))
@@ -261,7 +275,7 @@ class MainWindow(qtw.QWidget):
         # LOG #
         print('path:', self.path_ent.text())
         print('dpi:', self.dpi_spn.text())
-        print('filename:', self.filename0_ent.text())
+        print('filename:', self.filename_ent.text())
         print('format:', self.format_ent.currentText())
         print('page_off:', self.page_off_chk.isChecked())
         print('page_length:', self.page_length_spn.text())
@@ -271,7 +285,7 @@ class MainWindow(qtw.QWidget):
         pdf2image(
             path=self.path_ent.text(),
             dpi=self.dpi_spn.text(),
-            filename=self.filename0_ent.text(),
+            filename=self.filename_ent.text(),
             format=self.format_ent.currentText(),
             page_off=self.page_off_chk.isChecked(),
             page_length=self.page_length_spn.text(),
@@ -298,7 +312,7 @@ class MainWindow(qtw.QWidget):
     def add_image_tif_exe(self):
         # LOG #
         print('path:', self.path_ent.text())
-        print('filename_t', self.filename0_ent.text())
+        print('filename0', self.filename0_ent.text())
         print('filename1', self.filename1_ent.text())
         print('grayscale:', self.grayscale_chk.isChecked())
 
@@ -307,6 +321,18 @@ class MainWindow(qtw.QWidget):
             filename0=self.filename0_ent.text(),
             filename1=self.filename1_ent.text(),
             grayscale=self.grayscale_chk.isChecked()
+        )
+
+    def add_BefAft_exe(self):
+        # LOG #
+        print('path:', self.path_ent.text())
+        print('filename0', self.filename0_ent.text())
+        print('filename1', self.filename1_ent.text())
+
+        add_BefAft(
+            path=self.path_ent.text(),
+            filename0=self.filename0_ent.text(),
+            filename1=self.filename1_ent.text()
         )
 
     def image2image_exe(self):
@@ -332,7 +358,8 @@ class MainWindow(qtw.QWidget):
         self.settings.setValue('path', self.path_ent.text())
         self.settings.setValue('dpi', self.dpi_spn.text())
         self.settings.setValue('format', self.format_ent.currentText())
-        self.settings.setValue('filename_t', self.filename0_ent.text())
+        self.settings.setValue('filename', self.filename_ent.text())
+        self.settings.setValue('filename0', self.filename0_ent.text())
         self.settings.setValue('filename1', self.filename1_ent.text())
         self.settings.setValue('grayscale', self.grayscale_chk.isChecked())
         self.settings.setValue('page_off', self.page_off_chk.isChecked())

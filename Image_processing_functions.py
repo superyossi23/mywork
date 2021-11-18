@@ -5,7 +5,7 @@ def pdf2image_dir: Convert all pdf to image in the dir.
 def saveTiffStack: Save multi-frame tiff file
 def add_image: Add an img1 to an img0
 def add_image_tif: Add an img1 to an img0 (multi-frame TIFF ver.)
-def add_image_all: Add all the images to the another
+def add_BefAft: Add an img1 to an img0 (Add Before/After with different color)
 def pdf2tiff_compare: Execute add_image_tif to 2 pdf files
 def bmp2png: Convert bmp image to png image
 
@@ -20,14 +20,16 @@ import matplotlib.pyplot as plt
 
 # Global settings -----------------------------------------------------------------
 cwd = os.getcwd()
-
-dpi = 300
-filename0 = 'Receipt Excel_color'
-filename1 = 'Receipt Python3_color'
+path = cwd + '\\pdf2imageProject'
+dpi = 200
+filename0 = 'Receipt Python3'
+filename1 = 'Receipt Excel'
+out_filename = '{} on {}'.format(filename1, filename0)
 page_off = True
 page_length = 60
 separation = 10
-grayscale = True
+grayscale = False
+size = None  # (xx, xx)
 
 # ---------------------------------------------------------------------------------
 
@@ -69,7 +71,7 @@ def pdf2image(
     dpi=300,
     filename='Receipt Python3',
     format='.tif',
-    page_off=False,
+    page_off=True,
     page_length=1,
     separation=10,
     grayscale=False
@@ -100,7 +102,8 @@ def pdf2image(
     if page_off:
         print('All pdf pages will be converted')
         # Convert #
-        pages = convert_from_path(pdf_path=pdf_path, dpi=dpi, output_folder=ppmData, grayscale=grayscale)
+        pages = convert_from_path(pdf_path=pdf_path, dpi=dpi, output_folder=ppmData,
+                                  grayscale=grayscale, size=size)
         # Output #
         image_output(pages, path, format, filename)
 
@@ -233,140 +236,127 @@ def add_image(
 
 def add_image_tif(
         path: str,
-        filename0='Receipt Excel_gray',  # tiff, !filename_t must be bigger than filename1 (pixel size)
-        filename1='Receipt Python3_gray', # tiff
-        grayscale=True
+        filename0=filename0,  # tiff, !filename0 must be bigger than filename1 (pixel size)
+        filename1=filename1, # tiff
+        grayscale=False,
+        coloring=0
 ):
-    path = path.replace('\\', '/')
     """
     Add img1 on img0. img0 is changed to color:cyan.
     :param path: Working directory.
     :param filename0:
     :param filename1:
     :param grayscale: True/False. True if input image is grayscale.
-    :return:
+    :param coloring: Coloring to appeal difference. 0:blue/1:green/2:red.
+    :return: imgs0
     """
-    f0_list, f1_list = [], []
-    for file in os.listdir(path):
-        if file.startswith(filename0) and file.endswith('.tif'):
-            f0_list.append(file)
-        if file.startswith(filename1) and file.endswith('.tif'):
-            f1_list.append(file)
-
-    for f0, f1 in zip(f0_list, f1_list):
-        # Output filename
-        out_filename = '{} on {}'.format(f1.split('.')[0], f0.split('.')[0])
-        # Read (Multi-frame Tiff file)
-        ret0, imgs0 = cv.imreadmulti(path + '/' + f0)
-        ret1, imgs1 = cv.imreadmulti(path + '/' + f1)
-        # Add img1 on img0
-        cnt = 0
-        for img0, img1 in zip(imgs0, imgs1):
-            # img0 => img0_color. Convert gray to RGB (img0)
-            img0_color = np.zeros((img0.shape[0], img0.shape[1], 3), dtype='uint8')
-
-            if grayscale:
-                # Threshold select for transparent region
-                ret0, mask0 = cv.threshold(img0, 240, 255, cv.THRESH_BINARY)  # white -> out
-                ret1, mask1 = cv.threshold(img1, 240, 255, cv.THRESH_BINARY)  # white -> out
-                # Error handling. In case of color image input.
-                if len(img1.shape) == 2:
-                    rows, cols = img1.shape
-                else:
-                    print('Something is wrong with img1.shape!! Select grayscale unchecked')
-            else:
-                # Error handling. In case of gray image input.
-                if len(img1.shape) == 3:
-                    img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
-                    img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-                    ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # white -> out
-                    ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # white -> out
-                    rows, cols, channels = img1.shape
-                else:
-                    print('Something is wrong with img1.shape!! Select grayscale checked')
-
-            img0_color[:, :, 0:] = 255  # Black to White
-            img0_color[:, :, 0] = mask0  # White to Color  # Color select is here
-
-            # Create a ROI (Region of Interest)
-            roi = img0_color[0:rows, 0:cols]
-
-            # White-out the BG in ROI
-            img1_on_img0 = cv.bitwise_and(roi, roi, mask=mask1)
-            # Turned out to be unnecessary lines ---------------
-            # img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
-            # Take only region of Mask from img1
-            # mask_inv = cv.bitwise_not(mask1)
-            # img1_fg = cv.bitwise_and(img1, img1, mask=mask_inv)
-            # Put img1 in ROI and modify the img0
-            # dst = cv.add(img0_bg, img1_fg)  # ROI
-            # img0[0:rows, 0:cols] = dst  # Full Image
-            # --------------------------------------------------
-            imgs0[cnt] = img1_on_img0
-            cnt += 1
-
-        # Output #
-        print('Output: ', path + '/' + out_filename + '.tif')
-        saveTiffStack(save_path=path + '/' + out_filename + '.tif', imgs=imgs0)
-
-
-def add_image_all(
-    job_dir,
-    filename0='Receipt Excel',  # pdf, filename_t must be equal/bigger than filename1
-    filename1='Receipt Python3', # pdf
-    out_filename='add_image_all result',
-):
-    """
-    Add img1 on img0 (for PNG/JPEG)
-    """
-    file_dir = job_dir + 'image/'
-    file0s, file1s = [], []
-
-    # Split files to file0s and file1s
-    for filename in os.listdir(file_dir):
-        if filename0 in filename and 'jpg' in filename:
-            file0s.append(filename)
-        elif filename1 in filename and 'jpg' in filename:
-            file1s.append(filename)
-
+    print('Execute add_image_tif()')
+    path = path.replace('\\', '/')
+    # Create .tif name
+    f0 = filename0 + '.tif'
+    f1 = filename1 + '.tif'
+    # Output filename
+    out_filename = '{} on {}'.format(filename1, filename0)
+    # Read (Multi-frame Tiff file)
+    # Imported image will be BGR (shape = (xx, xx, xx))
+    ret0, imgs0 = cv.imreadmulti(path + '/' + f0)
+    ret1, imgs1 = cv.imreadmulti(path + '/' + f1)
+    # Add img1 on img0
     cnt = 0
-    for i in range(len(file0s)):
+    for img0, img1 in zip(imgs0, imgs1):
+        print('page' + str(cnt) + '\nimg0', img0.shape, '\nimg1', img1.shape)
+        # Create an roi (Region of Interest)
+        # img0 => roi. Convert gray to RGB (if grayscale selected)
+        roi = np.zeros((img0.shape[0], img0.shape[1], 3), dtype='uint8')  # All Black(0)
 
-        # Read
-        img0 = cv.imread(file_dir + file0s[i])  # flags=-1: alpha mode
-        img1 = cv.imread(file_dir + file1s[i])  # flags=-1: alpha mode
+        if grayscale:
+            print('grayscale checked.')
+            # Threshold select for transparent region
+            ret0, mask0 = cv.threshold(img0, 240, 255, cv.THRESH_BINARY)  # white -> out
+            ret1, mask1 = cv.threshold(img1, 240, 255, cv.THRESH_BINARY)  # white -> out
+            # Error handling. In case of color image input.
+            if len(img1.shape) == 2:
+                rows, cols = img1.shape
+            else:
+                print('** Something is wrong with img1.shape!! Select grayscale unchecked. **')
+        else:
+            # Error handling. In case of gray image input.
+            if len(img1.shape) == 3:
+                img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
+                img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
+                ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # white -> out
+                ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # white -> out
+                rows, cols, channels = img1.shape
+            else:
+                print('Something is wrong with img1.shape!! Select grayscale checked')
 
-        # img0 => img0_r
-        img0_r = np.zeros(img0.shape, dtype='uint8')
-        img0gray = cv.cvtColor(img0, cv.COLOR_BGR2GRAY)
-        ret0, mask0 = cv.threshold(img0gray, 240, 255, cv.THRESH_BINARY)  # White-out
-        img0_r[:, :, :2] = 255  # White BG
-        img0_r[:, :, 2] = mask0  # img0 => img0_r
-
-        # I want to put logo on top-left corner, So I create a ROI (Region of Interest)
-        rows, cols, channels = img1.shape
-        roi = img0_r[0:rows, 0:cols]
-
-        # Now create a mask of img1 and create its inverse mask also
-        img1gray = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
-        ret1, mask1 = cv.threshold(img1gray, 240, 255, cv.THRESH_BINARY)  # White-out
-        mask_inv = cv.bitwise_not(mask1)
-
+        # Background color (0) to White (255)
+        roi[:, :, 0:] = 255
+        # White to Color (mask region only)  # Color select is here
+        roi[:, :, coloring] = mask0  # 0:yellow/1:magenta/2:cyan
         # White-out the BG in ROI
-        img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
-
+        img1_on_img0 = cv.bitwise_and(roi, roi, mask=mask1)
+        # Turned out to be unnecessary lines ---------------
+        # img0_bg = cv.bitwise_and(roi, roi, mask=mask1)
         # Take only region of Mask from img1
-        img1_fg = cv.bitwise_and(img1, img1, mask=mask_inv)
-
+        # mask_inv = cv.bitwise_not(mask1)
+        # img1_fg = cv.bitwise_and(img1, img1, mask=mask_inv)
         # Put img1 in ROI and modify the img0
-        dst = cv.add(img0_bg, img1_fg)  # ROI
-        img0[0:rows, 0:cols] = dst  # Full Image
-
-        # Output
-        print('Output: ', cwd + file_dir + out_filename + '_' + str(cnt) + '.png')
-        cv.imwrite(job_dir + out_filename + '_' + str(cnt) + '.png', img0)
-
+        # dst = cv.add(img0_bg, img1_fg)  # ROI
+        # img0[0:rows, 0:cols] = dst  # Full Image
+        # --------------------------------------------------
+        imgs0[cnt] = img1_on_img0
         cnt += 1
+
+    # Output #
+    print('Output: ', path + '/' + out_filename + '.tif')
+    saveTiffStack(save_path=path + '/' + out_filename + '.tif', imgs=imgs0)
+    return imgs0
+
+
+def add_BefAft(
+        path: str,
+        filename0=filename0,  # tif, !filename0 must be bigger than filename1 (pixel size)
+        filename1=filename1,  # tif
+):
+    path = path.replace('\\', '/')
+    print('Execute add_image_tif() #1 : filename1 on filename0')
+    add_image_tif(path=path,
+                  filename0=filename0,  # tiff, !filename0 must be bigger than filename1 (pixel size)
+                  filename1=filename1,  # tiff
+                  coloring=2  # 2:cyan
+    )
+    print('Execute add_image_tif() #2 : filename0 on filename1')
+    add_image_tif(path=path,
+                  filename0=filename1,  # tiff, !filename0 must be bigger than filename1 (pixel size)
+                  filename1=filename0,  # tiff
+                  coloring=1  # 1:pink
+    )
+    print('Execute add_BefAft()')
+    # Create .tif name
+    f0 = '{} on {}.tif'.format(filename0, filename1)
+    f1 = '{} on {}.tif'.format(filename1, filename0)
+    # Read (Multi-frame Tiff file)
+    ret0, imgs0 = cv.imreadmulti(path + '/' + f0)  #BGR
+    ret1, imgs1 = cv.imreadmulti(path + '/' + f1)  #BGR
+    # Add img1 on img0
+    cnt = 0
+    for img0, img1 in zip(imgs0, imgs1):
+        print('page' + str(cnt) + '\nimg0', img0.shape, '\nimg1', img1.shape)
+        # img0 => img_colored(Convert gray to RGB. Blank image for now.)
+        # img_colored = np.zeros((img0.shape[0], img0.shape[1], 3), dtype='int32')  # All Black(0)
+        # Extract img0_only/img1_only
+        # img1_only = np.where(np.all(imgs0[cnt] == (255, 255, 0), -1), 0, 255)
+        # img0_only = np.where(np.all(imgs1[cnt] == (255, 255, 0), -1), 0, 255)
+
+        # Add img1 on img0
+        img1_on_img0 = cv.add(img0, img1)
+        imgs0[cnt] = img1_on_img0
+        cnt += 1
+
+    # Output #
+    print('Output: ', path + '/' + out_filename + '_final.tif')
+    saveTiffStack(save_path=path + '/' + out_filename + '_final.tif', imgs=imgs0)
 
 
 def pdf2tiff_compare(
@@ -463,7 +453,6 @@ def image2image(
                                  )
             # Save #
             cv.imwrite(path + '\\' + f.split('.')[0] + output, img)
-
 
 
 
