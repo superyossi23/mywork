@@ -10,14 +10,15 @@ from htmlModule import *
 
 
 # SETTINGS -----------------------------------------------------
-wd = r'D:\stock_data'
+wd = r'D:\\stock_data'
+img_dir = wd.split('\\')[-1]
 cwd = sys.path[-1]
 filelist = os.listdir(wd)  # Work file directory
 filelist = list(filter(lambda x: x.endswith('.png'), filelist))  # Work file
 path_select = '.'  # Output file directory. Absolute path ver.
 out_filename = 'Image_comparator.html'  # Output file name
 tab_name = 'Image Comparator'  # Tab name for html file
-col_num = 4  # The number of columns
+col_num = 3  # The number of columns
 # --------------------------------------------------------------
 
 
@@ -80,9 +81,9 @@ if col_num == 2:
         wrap_info.append(f0 + '<br>')  # Title
         # Path: Absolute or Relative
         # Path = Absolute
-        wrap_info.append(path_select + '/' + f0)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(f1 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f1)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
 
@@ -122,11 +123,11 @@ elif col_num == 3:
     wrap_info = [tab_name]
     for f0,f1,f2 in zip(filelist0, filelist1, filelist2):
         wrap_info.append(f0 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f0)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(f1 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f1)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
         wrap_info.append(f2 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f2)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
 
@@ -171,13 +172,13 @@ elif col_num == 4:
     wrap_info = [tab_name]
     for f0,f1,f2,f3 in zip(filelist0, filelist1, filelist2, filelist3):
         wrap_info.append(f0 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f0)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(f1 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f1)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
         wrap_info.append(f2 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f2)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
         wrap_info.append(f3 + '<br>')  # Title
-        wrap_info.append(path_select + '/' + f3)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f3)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
 
@@ -196,10 +197,10 @@ main = base % wrap_info
 #                   )
 
 # OUTPUT
-f = open(wd + '/' + out_filename, 'w')
+f = open('/'.join(wd.split('\\')[:-1]) + '/' + out_filename, 'w')
 f.write(main)
 f.close()
 
 # SHOW
-open_new_tab(wd + '/' + out_filename)
+open_new_tab('/'.join(wd.split('\\')[:-1]) + '/' + out_filename)
 
