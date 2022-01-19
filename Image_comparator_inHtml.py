@@ -10,17 +10,19 @@ from htmlModule import *
 
 
 # SETTINGS -----------------------------------------------------
-wd = r'D:\\stock_data'
+wd = r'D:\test_html'
 img_dir = wd.split('\\')[-1]
-cwd = sys.path[-1]
+
 filelist = os.listdir(wd)  # Work file directory
-filelist = list(filter(lambda x: x.endswith('.png'), filelist))  # Work file
+filelist = list(filter(lambda x: x.endswith('.JPG'), filelist))  # Work file
+
 path_select = '.'  # Output file directory. Absolute path ver.
-out_filename = 'Image_comparator.html'  # Output file name
-tab_name = 'Image Comparator'  # Tab name for html file
-col_num = 3  # The number of columns
+out_filename = img_dir + '.html'  # Output file name
+tab_name = img_dir  # Tab name for html file
+col_num = 4  # The number of columns
 # --------------------------------------------------------------
 
+print('\nfilelist:\n', filelist)
 
 # Read html base file
 # temp_wrapper = 'temp_wrapper.html'
@@ -49,6 +51,33 @@ base = """
 """
 
 body = ''
+# 1 COLUMNS VER. -----------------------------------------------------------
+if col_num == 1:
+    # Repeat pattern
+    wrapper = """
+    <tr>
+      <td>%s<img src=%s></td>
+      <td>%s<img src=%s></td>
+    </tr>
+    """
+    # Add wrapper (str) to <body>
+    for i in range(len(filelist)):
+        body = body + wrapper
+    # Insert content between <table> and </table>
+    index = base.find('</table>')
+    base = base[:index] + body + base[index:]
+
+    # Make a tuple for wrapper
+    wrap_info = [tab_name]
+    for f in filelist:
+        wrap_info.append(f + '<br>')  # Title
+        # Path select: Absolute or Relative
+        # Path = Absolute
+        wrap_info.append(path_select + '/' + img_dir + '/' + f)  # Image
+    # List to tuple (for wrapper)
+    wrap_info = tuple(wrap_info)
+    print('\nwrap_info:\n', wrap_info)
+
 # 2 COLUMNS VER. -----------------------------------------------------------
 if col_num == 2:
     # Repeat pattern
@@ -69,11 +98,12 @@ if col_num == 2:
     base = base[:index] + body + base[index:]
 
     # Divide filelist into 2 filelists
-    # Upper/Lower
-    filelist0 = filelist[:len(filelist)//2]
-    filelist1 = filelist[len(filelist)//2:]
-    # Odd/Even
-    # filelist0, filelist1 = get_oddeven(filelist)
+    ## Upper/Lower ##
+    # filelist0 = filelist[:len(filelist)//2]
+    # filelist1 = filelist[len(filelist)//2:]
+    ## Odd/Even ##
+    filelist0, filelist1 = get_oddeven(filelist)
+    print('\nfilelist0:\n', filelist0, '\nfilelist1:\n', filelist1)
 
     # Make a tuple for wrapper
     wrap_info = [tab_name]
@@ -86,6 +116,7 @@ if col_num == 2:
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
+    print('\nwrap_info:\n', wrap_info)
 
 # 3 COLUMNS VER. -----------------------------------------------------------
 elif col_num == 3:
@@ -112,12 +143,13 @@ elif col_num == 3:
     base = base[:index] + body + base[index:]
 
     # Divide filelist into 3 filelists
-    # Upper/Middle/Lower
-    filelist0 = filelist[:len(filelist) * 1 // 3]
-    filelist1 = filelist[len(filelist) * 1 // 3:len(filelist) * 2 // 3]
-    filelist2 = filelist[len(filelist) * 2 // 3:]
-    # Remainder == 0/1/2
-    # TBD
+    ## Upper/Middle/Lower ##
+    # filelist0 = filelist[:len(filelist) * 1 // 3]
+    # filelist1 = filelist[len(filelist) * 1 // 3:len(filelist) * 2 // 3]
+    # filelist2 = filelist[len(filelist) * 2 // 3:]
+    ## Left/Center/Right ##
+    filelist0, filelist1, filelist2 = get_LCR(filelist)
+    print('\nfilelist0:\n', filelist0, '\nfilelist1:\n', filelist1, '\nfilelist2:\n', filelist2)
 
     # Make a tuple for wrapper
     wrap_info = [tab_name]
@@ -130,6 +162,7 @@ elif col_num == 3:
         wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
+    print('\nwrap_info:\n', wrap_info)
 
 # 3 COLUMNS VER. -----------------------------------------------------------
 elif col_num == 4:
@@ -167,6 +200,9 @@ elif col_num == 4:
     filelist1 = filelist[len(filelist) * 1 // 4:len(filelist) * 2 // 4]
     filelist2 = filelist[len(filelist) * 2 // 4:len(filelist) * 3 // 4]
     filelist3 = filelist[len(filelist) * 3 // 4:]
+    ## LL/L/R/RR ##
+    filelist0, filelist1, filelist2, filelist3 = get_LLRR(filelist)
+    print('\nfilelist0:\n', filelist0, '\nfilelist1:\n', filelist1, '\nfilelist2:\n', filelist2)
 
     # Make a tuple for wrapper
     wrap_info = [tab_name]
@@ -181,6 +217,7 @@ elif col_num == 4:
         wrap_info.append(path_select + '/' + img_dir + '/' + f3)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
+    print('\nwrap_info:\n', wrap_info)
 
 # --------------------------------------------------------------------------
 else:
@@ -197,10 +234,12 @@ main = base % wrap_info
 #                   )
 
 # OUTPUT
-f = open('/'.join(wd.split('\\')[:-1]) + '/' + out_filename, 'w')
+output = '/'.join(wd.split('\\')[:-1]) + '/' + out_filename
+f = open(output, 'w')
 f.write(main)
 f.close()
+print('\nOUTPUT:\n', output)
 
 # SHOW
-open_new_tab('/'.join(wd.split('\\')[:-1]) + '/' + out_filename)
+open_new_tab(output)
 
