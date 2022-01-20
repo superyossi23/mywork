@@ -44,4 +44,16 @@ def get_LLRR(filelist):
     return filelist0, filelist1, filelist2, filelist3
 
 
+def sort_filelist(filelist, lastname):
+    filedict = {}
+    for f in filelist:
+        num = f.split('.')[0].split(lastname)[1]
+        if num == '':
+            num = 0
+        else:
+            num = int(num)
+        filedict[num] = f
+    return filedict
+
+
 

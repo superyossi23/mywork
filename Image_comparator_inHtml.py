@@ -11,17 +11,22 @@ from htmlModule import *
 
 # SETTINGS -----------------------------------------------------
 wd = r'D:\test_html'
-img_dir = wd.split('\\')[-1]
-
+col_num = 4  # The number of columns
 filelist = os.listdir(wd)  # Work file directory
 filelist = list(filter(lambda x: x.endswith('.JPG'), filelist))  # Work file
 
+img_dir = wd.split('\\')[-1]
 path_select = '.'  # Output file directory. Absolute path ver.
 out_filename = img_dir + '.html'  # Output file name
 tab_name = img_dir  # Tab name for html file
-col_num = 4  # The number of columns
 # --------------------------------------------------------------
 
+# SORTING
+print('Execute SORTING!!')
+filedict = sort_filelist(filelist, 'IMG_')
+print('\nfiledict:\n', filedict)
+filelist = sorted(filedict.values(), key=lambda x:x[0])
+# --------------------------------------------------------------
 print('\nfilelist:\n', filelist)
 
 # Read html base file
