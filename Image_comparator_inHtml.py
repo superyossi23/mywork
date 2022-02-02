@@ -1,6 +1,7 @@
 """
-Display all the image file in a directory.
-2/3/4 columns ver. is currently available.
+Display all the image file in a directory. 1/2/3/4 columns ver. is currently available.
+2022/02/02 Feature: bgcolor and font size added.
+
 """
 
 from webbrowser import open_new_tab
@@ -11,10 +12,12 @@ from htmlModule import *
 
 # SETTINGS -----------------------------------------------------
 wd = r'D:\test_html'
-col_num = 4  # The number of columns
-filelist = os.listdir(wd)  # Work file directory
-filelist = list(filter(lambda x: x.endswith('.JPG'), filelist))  # Work file
+col_num = 2
+filename = 'IMG_'
+format = '.JPG'
 
+filelist = os.listdir(wd)  # Work file directory
+filelist = list(filter(lambda x: x.endswith(format), filelist))  # Work file
 img_dir = wd.split('\\')[-1]
 path_select = '.'  # Output file directory. Absolute path ver.
 out_filename = img_dir + '.html'  # Output file name
@@ -22,14 +25,14 @@ tab_name = img_dir  # Tab name for html file
 # --------------------------------------------------------------
 
 # SORTING
-print('Execute SORTING!!')
-filedict = sort_filelist(filelist, 'IMG_')
-print('\nfiledict:\n', filedict)
-filelist = sorted(filedict.values(), key=lambda x:x[0])
+# print('Execute SORTING!!')
+# filedict = sort_filelist(filelist, filename)
+# print('\nfiledict:\n', filedict)
+# filelist = sorted(filedict.values(), key=lambda x:x[0])
 # --------------------------------------------------------------
 print('\nfilelist:\n', filelist)
 
-# Read html base file
+# How to read html base file
 # temp_wrapper = 'temp_wrapper.html'
 # htmlFile = open(temp_wrapper, 'r', encoding='UTF-8')
 # base = htmlFile.read()
@@ -41,8 +44,7 @@ base = """
     <title>%s</title>
     <style>
         td {
-        background-color: #ffffff;
-        border: 1px solid #000000;
+        border: 3px solid #555555;
         padding-left: .5em;
         padding-right: .5em;
       }
@@ -61,8 +63,7 @@ if col_num == 1:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
     </tr>
     """
     # Add wrapper (str) to <body>
@@ -75,10 +76,10 @@ if col_num == 1:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f in filelist:
-        wrap_info.append(f + '<br>')  # Title
+        wrap_info.append(f + '<br>')  # Title (%s)
         # Path select: Absolute or Relative
         # Path = Absolute
-        wrap_info.append(path_select + '/' + img_dir + '/' + f)  # Image
+        wrap_info.append(path_select + '/' + img_dir + '/' + f)  # Image (%s)
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
     print('\nwrap_info:\n', wrap_info)
@@ -88,8 +89,8 @@ if col_num == 2:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
     </tr>
     """
     # In the case of 1 column missing
@@ -128,9 +129,9 @@ elif col_num == 3:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
     </tr>
     """
     # In the case of 1 column missing
@@ -174,10 +175,10 @@ elif col_num == 4:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
-      <td>%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
     </tr>
     """
     # In the case of 1 column missing
