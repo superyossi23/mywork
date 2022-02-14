@@ -41,6 +41,7 @@ class MainWindow(qtw.QWidget):
     size0 = settings.value('size0')
     size1 = settings.value('size1')
     thread = settings.value('thread')
+    transparent_pdf = settings.value('transparent_pdf', False, type=bool)
     # ---- #
     # tab1 #
     path1 = settings.value('path1')
@@ -225,15 +226,14 @@ class MainWindow(qtw.QWidget):
         optional_form_layout.addWidget(qtw.QLabel('# optional_form', self), 1, 1, 1, 10)
         optional_form_layout.addWidget(self.grayscale_chk, 2, 1, 1, 1)
         optional_form_layout.addWidget(self.thread_spn, 2, 3, 1, 1)
-        optional_form_layout.addWidget(qtw.QLabel('<b># thread_count</b>(pdf2image)', self, alignment=qtc.Qt.AlignRight), 2, 4, 1, 1)
-        # optional_form_layout.addWidget(qtw.QLabel('(pdf2image)', self), 2, 5, 1, 1)
+        optional_form_layout.addWidget(qtw.QLabel('<b># thread_count</b>(pdf2image)', self), 2, 4, 1, 1)
         optional_form_layout.addWidget(self.page_off_chk, 3, 1, 1, 1)
         optional_form_layout.addWidget(qtw.QLabel('(pdf2image)', self), 3, 2, 1, 1)
         optional_form_layout.addWidget(self.size_off_chk, 3, 6, 1, 1)
         optional_form_layout.addWidget(qtw.QLabel('(pdf2image)', self), 3, 7, 1, 1)
         optional_form_layout.addWidget(qtw.QLabel('from', self, alignment=qtc.Qt.AlignRight), 4, 2, 1, 1)
         optional_form_layout.addWidget(self.page_sel0_spn, 4, 3, 1, 1)
-        optional_form_layout.addWidget(qtw.QLabel('<b># page_sel</b>', self), 4, 4, 1, 1)
+        optional_form_layout.addWidget(qtw.QLabel('<b># page_sel</b> :Don\'t select the same page', self), 4, 4, 1, 1)
         optional_form_layout.addWidget(qtw.QLabel('width', self, alignment=qtc.Qt.AlignRight), 4, 7, 1, 1)
         optional_form_layout.addWidget(self.size0_spn, 4, 8, 1, 1)
         optional_form_layout.addWidget(qtw.QLabel('to', self, alignment=qtc.Qt.AlignRight), 5, 2, 1, 1)
@@ -301,7 +301,7 @@ class MainWindow(qtw.QWidget):
         point_form_layout = qtw.QGridLayout()
         # qtw.addWidget(self, row, column, row span, column span)
         # point_exe0
-        point_form_layout.addWidget(qtw.QLabel('# point_form\nMake selected color transparent. \nOnly works for output: .png/.tif', self),
+        point_form_layout.addWidget(qtw.QLabel('# point_form\nMake selected color transparent. \nOnly works for output: .png/.tif (#Doesn\'t work...)', self),
                                      1, 1, 1, 10)
         point_form_layout.addWidget(self.point_exe0_chk, 2, 1, 1, 1)
         point_form_layout.addWidget(self.b0_spn, 2, 2, 1, 1)
@@ -450,7 +450,7 @@ class MainWindow(qtw.QWidget):
             page_sel=page_sel,
             grayscale=self.grayscale_chk.isChecked(),
             size=size,
-            thread_count=self.thread_spn.value()
+            thread_count=self.thread_spn.value(),
         )
 
     def pdf2image_dir_exe(self):

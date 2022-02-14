@@ -1,8 +1,9 @@
 """
 2021/12/31 Properties: size/page_sel were added (pdf2image).
-2021/01/02 image2image launched.
-2021/01/04 imshow added (image2image).
-2021/01/08 "q_jpg" added (image2image).
+2022/01/02 image2image launched.
+2022/01/04 imshow added (image2image).
+2022/01/08 "q_jpg" added (image2image).
+2022/02/12 Upper letter format enabled (e.g. PNG).
 NEXT...
 
 def image_output: Outputs image. Works in .tif/.png/.jpg.
@@ -24,6 +25,7 @@ import os
 import glob
 import cv2 as cv
 import matplotlib.pyplot as plt
+from time import gmtime, strftime
 
 # Global settings -----------------------------------------------------------------
 path = r'C:\Users\A\Desktop\pythonProject\opencvProject\pdf2imageProject'
@@ -66,7 +68,17 @@ def image_output(
         for page in pages:
             myfile = outputDir + '/' + filename + '_' + str(cnt) + format
             cnt += 1
-            page.save(myfile, 'PNG')
+            newdata = []
+            data_pcs = page.getdata()
+            for data in data_pcs:
+                if data[0] == 255 and data[1] == 255 and data[2] == 255:  # finding White color by its RGB value
+                    # Sorting a transparent value when you find a White color.
+                    newdata.append((255, 255, 255, 0))
+                # Other colors remain unchanged.
+                else:
+                    newdata.append(data)
+            data_pcs.putdata(newdata)
+            page.save(myfile, 'PNG', transparent=0)
             print('Output: ', myfile)
     # TIFF #
     elif format == '.tif':
@@ -85,12 +97,12 @@ def image_output(
 
 
 def pdf2image(
-    path:str=path,
+    path=path,
     dpi=300,
     filename='Receipt Python3',
     format='.tif',
     page_off=True,
-    page_sel:list=[1, 2],
+    page_sel=[1, 2],
     size=None,
     grayscale=False,
     thread_count=1,
@@ -468,12 +480,15 @@ def image2image(
     """
     print('Execute image2image()', '\ninspect.signature(image2image):\n', inspect.signature(image2image))
     print('point_dic:\n', point_dic, '\nrange_dic:\n', range_dic)
-    # Settings #
+    # SETTINGS #
     path = path.replace('\\', '/')
     # Job directory
     filelist = os.listdir(path)
     print('filelist:', filelist)
-    filelist = list(filter(lambda x: x.endswith(input), filelist))
+    # FILTERING #
+    filtered = list(filter(lambda x: x.endswith(input), filelist))
+    filtered.extend(list(filter(lambda x: x.endswith(input.upper()), filelist)))
+    filelist = filtered
     print('filelist(filtered):', filelist)
     # Error handling
     if len(filelist) == 0:
@@ -481,7 +496,7 @@ def image2image(
 
     # OUTPUT #
     # Make image transparent
-    if output == '.png' or output == '.tif':
+    if output == '.PNG' or output == '.png' or output == '.TIF' or output == '.tif':
         for f in filelist:
             img = cv.imread(path + '/' + f)
             # Add alpha channel to RGB
@@ -518,23 +533,23 @@ def image2image(
                                      range_dic['b1_to'], range_dic['g1_to'], range_dic['r1_to'],
                                      )
             # SAVE #
-            cv.imwrite(path + '/' + f.split('.')[0] + output, img)
+            cv.imwrite(path + '/' + f.split('.')[0] + '_' + strftime('%H%M%S') + output, img)
             print('cv.imwrite() done!! Output:', path + '/' + f.split('.')[0] + output)
 
-    elif output == '.jpg':
+    elif output == '.JPG' or output == '.jpg':
         for f in filelist:
             img = cv.imread(path + '/' + f)
             print('img.shape: ', img.shape)
             # SAVE #
-            cv.imwrite(path + '/' + f.split('.')[0] + output, img, [cv.IMWRITE_JPEG_QUALITY, q_jpg])
+            cv.imwrite(path + '/' + f.split('.')[0] + '_' + strftime('%H%M%S') + output, img, [cv.IMWRITE_JPEG_QUALITY, q_jpg])
             print('cv.imwrite() done!! Output:', path + '/' + f.split('.')[0] + output)
 
-    elif output == '.bmp':
+    elif output == '.BMP' or output == '.bmp':
         for f in filelist:
             img = cv.imread(path + '/' + f)
             print('img.shape: ', img.shape)
             # SAVE #
-            cv.imwrite(path + '/' + f.split('.')[0] + output, img)
+            cv.imwrite(path + '/' + f.split('.')[0] + '_' + strftime('%H%M%S') + output, img)
             print('cv.imwrite() done!! Output:', path + '/' + f.split('.')[0] + output)
     else:
         Exception('Error!! Output must be .tif/.png/.jpg/.bmp.')

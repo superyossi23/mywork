@@ -1,20 +1,21 @@
 """
 Display all the image file in a directory. 1/2/3/4 columns ver. is currently available.
-2022/02/02 Feature: bgcolor and font size added.
-
+2022/02/02 Feature: <bgcolor> and <font size> and <font color> added.
+2022/02/11 Format reorganized (Paragraph added). natsort added.
 """
 
 from webbrowser import open_new_tab
 import os
 import sys
+from natsort import natsorted
 from htmlModule import *
 
 
 # SETTINGS -----------------------------------------------------
-wd = r'D:\test_html'
+wd = r'D:\stock_data'
 col_num = 2
-filename = 'IMG_'
-format = '.JPG'
+format = '.png'
+filename = 'IMG_'  # (SORTING)
 
 filelist = os.listdir(wd)  # Work file directory
 filelist = list(filter(lambda x: x.endswith(format), filelist))  # Work file
@@ -29,6 +30,9 @@ tab_name = img_dir  # Tab name for html file
 # filedict = sort_filelist(filelist, filename)
 # print('\nfiledict:\n', filedict)
 # filelist = sorted(filedict.values(), key=lambda x:x[0])
+
+# natsort
+filelist = natsorted(filelist)
 # --------------------------------------------------------------
 print('\nfilelist:\n', filelist)
 
@@ -39,21 +43,24 @@ print('\nfilelist:\n', filelist)
 base = """
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>%s</title>
     <style>
-        td {
-        border: 3px solid #555555;
-        padding-left: .5em;
-        padding-right: .5em;
+      table {
+      table-layout: fixed;
       }
-</style>
-</head>
-<body>
-<table border="1">
-</table>
-</body>
+      table td {
+      border: 3px solid #555555;
+      padding-left: .5em;
+      padding-right: .5em;
+      }
+    </style>
+  </head>
+  <body>
+    <table border="1">
+    </table>
+  </body>
 </html>
 """
 
@@ -63,7 +70,10 @@ if col_num == 1:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<br></font>
+        <img src=%s>
+      </td>
     </tr>
     """
     # Add wrapper (str) to <body>
@@ -76,7 +86,11 @@ if col_num == 1:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f in filelist:
-        wrap_info.append(f + '<br>')  # Title (%s)
+        wrap_info.append(
+        '''
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        ''' + f)  # Title (%s)
         # Path select: Absolute or Relative
         # Path = Absolute
         wrap_info.append(path_select + '/' + img_dir + '/' + f)  # Image (%s)
@@ -89,8 +103,14 @@ if col_num == 2:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<br></font>
+        <img src=%s>
+      </td>
     </tr>
     """
     # In the case of 1 column missing
@@ -114,11 +134,19 @@ if col_num == 2:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f0,f1 in zip(filelist0, filelist1):
-        wrap_info.append(f0 + '<br>')  # Title
+        wrap_info.append(
+        '''
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        ''' + f0)  # Title (%s)
         # Path: Absolute or Relative
         # Path = Absolute
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
-        wrap_info.append(f1 + '<br>')  # Title
+        wrap_info.append(
+        '''
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        ''' + f1)  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
@@ -129,9 +157,18 @@ elif col_num == 3:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<<br></font>
+        <img src=%s>
+      </td>
     </tr>
     """
     # In the case of 1 column missing
@@ -160,11 +197,23 @@ elif col_num == 3:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f0,f1,f2 in zip(filelist0, filelist1, filelist2):
-        wrap_info.append(f0 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f0)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
-        wrap_info.append(f1 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f1)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
-        wrap_info.append(f2 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f2)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
@@ -175,10 +224,22 @@ elif col_num == 4:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
-      <td bgcolor="ffffff"><font size="4">%s<img src=%s></td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<<br></font>
+        <img src=%s>
+      </td>
+      <td bgcolor="ffffff">
+        <font size="4">%s<<br></font>
+        <img src=%s>
+      </td>
     </tr>
     """
     # In the case of 1 column missing
@@ -213,13 +274,29 @@ elif col_num == 4:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f0,f1,f2,f3 in zip(filelist0, filelist1, filelist2, filelist3):
-        wrap_info.append(f0 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f0)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
-        wrap_info.append(f1 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f1)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
-        wrap_info.append(f2 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f2)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
-        wrap_info.append(f3 + '<br>')  # Title
+        wrap_info.append(
+        """
+        <!p1><font color='black'><br></font>
+        <!p2><br>
+        """ + f3)  # Title
         wrap_info.append(path_select + '/' + img_dir + '/' + f3)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
