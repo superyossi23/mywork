@@ -75,26 +75,31 @@ def txtcomp_linebyline_html(
     f1 = open(first_file, "r").readlines()
     f2 = open(second_file, "r").readlines()
 
-    f1_list = f1.split('\n')
-    f2_list = f2.split('\n')
-
-    for f in f1_list:
-        if f1.startswith('readnvm'):
-            f1_list.remove(f1)
-    for f in f2_list:
-        if f2.startswith('readnvm'):
-            f2_list.remove(f2)
+    # \ Removal of unnecsesary lines
+    f_reGex = re.compile(r'R\d+\s\w\w\w\w\w\w\w\w\w')
+    for f in f1:
+        mo = f_reGex.search(f)
+        if f.startswith('readnvm'):
+            f1.remove(f)
+        elif f == mo.group():
+            f1.remove(f)
+    for f in f2:
+        mo = f_reGex.search(f)
+        if f.startswith('readnvm'):
+            f2.remove(f)
+        elif f == mo.group():
+            f1.remove(f)
 
     # \ reGex ver.
     # f_reGex = re.compile(r'\w+\s\w+')
-    # for f in f1_list:
+    # for f in f1:
     #     mo = f_reGex.search(f)  # Matched Object
     #     if f == mo.group():  # mo.group() returns the matched string
-    #         f1_list.remove(f)
-    # for f in f2_list:
+    #         f1.remove(f)
+    # for f in f2:
     #     mo = f_reGex.search(f)  # Matched Object
     #     if f == mo.group():  # mo.group() returns the matched string
-    #         f2_list.remove(f)
+    #         f2.remove(f)
 
     # \ Make HTML (str)
     print('Execute "difflib.HtmlDiff().make_file(f1, f2, first_file, second_file)"')
@@ -184,6 +189,8 @@ def txtcomp_lineandfile(
 
 
 if __name__ == "__main__":
-    txtcomp_linebyline_html(path, filename_1, filename_2)
+    # txtcomp_linebyline_html(path, filename_1, filename_2)
     # txtcomp_linebyline(path, filename_1, filename_2)
+
+    print('text_comparator.py done!')
 
