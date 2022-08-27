@@ -1,5 +1,6 @@
 """
 22.08.22 txtcomp_linebyline_html: startswith added. reGex added.
+22.08.28 txtcomp_linebyline_html: Delete unwanted string in the line (re.sub()).
 
 def txtcomp_linebyline: Compare txt file line by line
 def txtcomp_linebyline_html: Compare txt file line by line & Output in html <https://www.youtube.com/watch?v=UfTxOjdM9Bg&t=2s: Comparing Two Text Files using Python>
@@ -75,20 +76,16 @@ def txtcomp_linebyline_html(
     f1 = open(first_file, "r").readlines()
     f2 = open(second_file, "r").readlines()
 
-    # \ Removal of unnecsesary lines
-    f_reGex = re.compile(r'R\d+\s\w\w\w\w\w\w\w\w\w')
     for f in f1:
-        mo = f_reGex.search(f)
         if f.startswith('readnvm'):
             f1.remove(f)
-        elif f == mo.group():
-            f1.remove(f)
+        # Delete unwanted string in the line
+        re.sub(r'R0+\s\w\w\w\w\w\w\w\w\w', '', f)
     for f in f2:
-        mo = f_reGex.search(f)
         if f.startswith('readnvm'):
             f2.remove(f)
-        elif f == mo.group():
-            f1.remove(f)
+        # Delete unwanted string in the line
+        re.sub(r'R0+\s\w\w\w\w\w\w\w\w\w', '', f)
 
     # \ reGex ver.
     # f_reGex = re.compile(r'\w+\s\w+')
