@@ -2,6 +2,8 @@
 Display all the image file in a directory. 1/2/3/4 columns ver. is currently available.
 2022/02/02 Feature: <bgcolor> and <font size> and <font color> added.
 2022/02/11 Format reorganized (Paragraph added). natsort added.
+2022.10.16 File name will be oscilloscope color. Applied for 1/2/3 columns ver.
+
 """
 
 from webbrowser import open_new_tab
@@ -11,11 +13,13 @@ from natsort import natsorted
 from htmlModule import *
 
 
-# SETTINGS -----------------------------------------------------
+# --------------------------------------------------------------
+# SETTINGS #
+
 wd = r'D:\stock_data'
-col_num = 2
+col_num = 1
 format = '.png'
-filename = 'IMG_'  # (SORTING)
+# filename = 'IMG_'  # (SORTING)
 
 filelist = os.listdir(wd)  # Work file directory
 filelist = list(filter(lambda x: x.endswith(format), filelist))  # Work file
@@ -23,9 +27,10 @@ img_dir = wd.split('\\')[-1]
 path_select = '.'  # Output file directory. Absolute path ver.
 out_filename = img_dir + '.html'  # Output file name
 tab_name = img_dir  # Tab name for html file
-# --------------------------------------------------------------
 
-# SORTING
+# --------------------------------------------------------------
+# SORTING #
+
 # print('Execute SORTING!!')
 # filedict = sort_filelist(filelist, filename)
 # print('\nfiledict:\n', filedict)
@@ -70,7 +75,7 @@ if col_num == 1:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff">
+      <td bgcolor="000000">
         <font size="4">%s<br></font>
         <img src=%s>
       </td>
@@ -86,13 +91,27 @@ if col_num == 1:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f in filelist:
+        # Oscilloscope color for a file name
+        f_spl = f.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f_colored = '_'.join(f_spl)
+
         wrap_info.append(
         '''
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        ''' + f)  # Title (%s)
-        # Path select: Absolute or Relative
-        # Path = Absolute
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f_colored + '</font><br>')  # Title (%s)
+        # Path select: Absolute or Relative (Use absolute path)
         wrap_info.append(path_select + '/' + img_dir + '/' + f)  # Image (%s)
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
@@ -103,11 +122,11 @@ if col_num == 2:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff">
+      <td bgcolor="000000">
         <font size="4">%s<br></font>
         <img src=%s>
       </td>
-      <td bgcolor="ffffff">
+      <td bgcolor="000000">
         <font size="4">%s<br></font>
         <img src=%s>
       </td>
@@ -134,19 +153,50 @@ if col_num == 2:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f0,f1 in zip(filelist0, filelist1):
+        # Oscilloscope color for a file name --------------------------
+        # f0
+        f_spl = f0.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f0_colored = '_'.join(f_spl)
+        # f1
+        f_spl = f1.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f1_colored = '_'.join(f_spl)
+        # --------------------------------------------------------------
+
         wrap_info.append(
         '''
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        ''' + f0)  # Title (%s)
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f0_colored + '</font><br>')  # Title (%s)
         # Path: Absolute or Relative
         # Path = Absolute
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(
         '''
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        ''' + f1)  # Title (%s)
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f1_colored + '</font><br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
@@ -157,15 +207,15 @@ elif col_num == 3:
     # Repeat pattern
     wrapper = """
     <tr>
-      <td bgcolor="ffffff">
+      <td bgcolor="000000">
         <font size="4">%s<br></font>
         <img src=%s>
       </td>
-      <td bgcolor="ffffff">
-        <font size="4">%s<<br></font>
+      <td bgcolor="000000">
+        <font size="4">%s<br></font>
         <img src=%s>
       </td>
-      <td bgcolor="ffffff">
+      <td bgcolor="000000">
         <font size="4">%s<<br></font>
         <img src=%s>
       </td>
@@ -197,23 +247,68 @@ elif col_num == 3:
     # Make a tuple for wrapper
     wrap_info = [tab_name]
     for f0,f1,f2 in zip(filelist0, filelist1, filelist2):
+        # Oscilloscope color for a file name --------------------------
+        # f0
+        f_spl = f0.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f0_colored = '_'.join(f_spl)
+        # f1
+        f_spl = f1.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f1_colored = '_'.join(f_spl)
+        # f2
+        f_spl = f2.split('_')
+        for i in range(len(f_spl)):
+            if 'CH1' or 'ch1' in f_spl[i]:
+                f_spl[i] = "<font color='ffff00'>" + f_spl[i]  # Yellow
+            elif 'CH2' or 'ch2' in f_spl[i]:
+                f_spl[i] = "<font color='ff00ff'>" + f_spl[i]  # Magenta
+            elif 'CH3' or 'ch3' in f_spl[i]:
+                f_spl[i] = "<font color='0000ff'>" + f_spl[i]  # Blue
+            elif 'CH4' or 'ch4' in f_spl[i]:
+                f_spl[i] = "<font color='00ff00'>" + f_spl[i]  # Green
+            else:
+                f_spl[i] = "<font color='ffffff'>" + f_spl[i]  # White
+            f2_colored = '_'.join(f_spl)
+        # --------------------------------------------------------------
+
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f0)  # Title
+        '''
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f0_colored + '</font><br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f1)  # Title
+        '''
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f1_colored + '</font><br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f2)  # Title
+        '''
+        <!p1><font color='ffffff'></font><br>
+        <!p2><font color='ffffff'></font><br>
+        <!p3>''' + f2_colored + '</font><br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
@@ -229,15 +324,15 @@ elif col_num == 4:
         <img src=%s>
       </td>
       <td bgcolor="ffffff">
-        <font size="4">%s<<br></font>
+        <font size="4">%s<br></font>
         <img src=%s>
       </td>
       <td bgcolor="ffffff">
-        <font size="4">%s<<br></font>
+        <font size="4">%s<br></font>
         <img src=%s>
       </td>
       <td bgcolor="ffffff">
-        <font size="4">%s<<br></font>
+        <font size="4">%s<br></font>
         <img src=%s>
       </td>
     </tr>
@@ -275,28 +370,28 @@ elif col_num == 4:
     wrap_info = [tab_name]
     for f0,f1,f2,f3 in zip(filelist0, filelist1, filelist2, filelist3):
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f0)  # Title
+        '''
+        <!p1><font color='000000'></font><br>
+        <!p2><font color='000000'></font><br>
+        <!p3>''' + f0 + '<br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f0)  # Image
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f1)  # Title
+        '''
+        <!p1><font color='000000'></font><br>
+        <!p2><font color='000000'></font><br>
+        <!p3>''' + f1 + '<br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f1)  # Image
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f2)  # Title
+        '''
+        <!p1><font color='000000'></font><br>
+        <!p2><font color='000000'></font><br>
+        <!p3>''' + f2 + '<br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f2)  # Image
         wrap_info.append(
-        """
-        <!p1><font color='black'><br></font>
-        <!p2><br>
-        """ + f3)  # Title
+        '''
+        <!p1><font color='000000'></font><br>
+        <!p2><font color='000000'></font><br>
+        <!p3>''' + f3 + '<br>')  # Title (%s)
         wrap_info.append(path_select + '/' + img_dir + '/' + f3)  # Image
     # List to tuple (for wrapper)
     wrap_info = tuple(wrap_info)
