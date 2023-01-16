@@ -1,6 +1,7 @@
 """
-22.08.22 txtcomp_linebyline_html: startswith added. reGex added.
-22.08.28 txtcomp_linebyline_html: Delete unwanted string in the line (re.sub()).
+2022.08.22 txtcomp_linebyline_html: startswith added. reGex added.
+2022.08.28 txtcomp_linebyline_html: Delete unwanted string in the line (re.sub()).
+2023.01.13 txtcomp_lineandfile editted.
 
 def txtcomp_linebyline: Compare txt file line by line
 def txtcomp_linebyline_html: Compare txt file line by line & Output in html <https://www.youtube.com/watch?v=UfTxOjdM9Bg&t=2s: Comparing Two Text Files using Python>
@@ -12,10 +13,12 @@ import difflib
 import sys
 import re
 import time
+import datetime
 
-path = r"C:\Users\fx33403\Desktop\temp"
-filename_1 = 'teraterm_v271_nvmwritten_220819.txt'
-filename_2 = 'teraterm_v281_nvmwritten_220819.txt'
+
+path = r"C:\Users\A\Desktop\pythonProject\myProject\text_comparator"
+filename_1 = 'test1.txt'
+filename_2 = 'test2.txt'
 # Output only lines that has differences
 DIFFERENCES_ONLY = False
 # For Debug
@@ -60,7 +63,6 @@ def txtcomp_linebyline(
     print(f"Elapsed time : {round(elapsed_time, 3)} sec")
 
     return f1_only, f2_only
-
 
 
 def txtcomp_linebyline_html(
@@ -156,7 +158,6 @@ def txtcomp_linebyline_html(
     return diff
 
 
-
 def txtcomp_lineandfile(
     path,
     filename_1,
@@ -168,16 +169,20 @@ def txtcomp_lineandfile(
     # \ 2 txt file lists must be the same length
     f1 = open(first_file, "r").readlines()
     f2 = open(second_file, "r").readlines()
+    now = datetime.datetime.now()
+    now = now.strftime('%Y/%m/%d %H:%M:%S')
 
-    new_f = open('resources/txtcomp_lineandfile.txt', 'w')
-    new_f.write('f1: ' + first_file + '\nf2: ' + second_file +
-                '\nString not in f1 but f2...\n\n')
+    new_f = open('txtcomp_lineandfile.txt', 'w')
+    # WRITE TO A FILE THAT WILL BE EXPORTED
+    new_f.write(now + '  txtcomp_lineandfile.txt' +
+                '\nf1: ' + first_file + '\nf2: ' + second_file +
+                '\n\nString not in f1 but f2...\n')
 
     f1_joined = ''.join(f1)
     for string in f2:
         if string not in f1_joined:
             print('string not in f1: ', string)
-            new_f.write(string + '\n')
+            new_f.write(string)
 
     # \ closing files
     new_f.close()
@@ -186,8 +191,10 @@ def txtcomp_lineandfile(
 
 
 if __name__ == "__main__":
+    # SELECT A FUNCTION YOU WANT TO USE
     # txtcomp_linebyline_html(path, filename_1, filename_2)
     # txtcomp_linebyline(path, filename_1, filename_2)
+    txtcomp_lineandfile(path, filename_1, filename_2)
 
     print('text_comparator.py done!')
 
